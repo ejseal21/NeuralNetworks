@@ -63,7 +63,7 @@ class Adaline():
         ----------
         The net_input. Shape = [Num samples,]
         '''
-        net_input = np.sum(self.wts[1:]*features[1][1:] + self.wts[0])
+        net_input = self.wts[1:].T*features[1][1:] + self.wts[0]
         print("Net Input: " + net_input)
         return net_input
 
@@ -99,7 +99,6 @@ class Adaline():
         
         #expecting loss to have shape [num samples, ] and be the loss for each input
         loss = 0.5 * np.sum((y - net_act) ** 2)
-        print(loss)
         return loss
         
 
@@ -118,7 +117,13 @@ class Adaline():
         The accuracy for each input sample in the epoch. ndarray. Shape = [Num samples,]
             Expressed as proportions in [0.0, 1.0]
         '''
-        pass
+        arr, counts = np.unique(np.equal(y, y_pred), return_counts=True) #calculate the unique values, and the number of times they occur
+
+        if arr[0]: #if the first unique value is True, then compute proportion correct
+            return counts[0]/y.size
+        else: #otherwise, compute 1-prportion mismatched
+            return 1-counts[0]/y.size 
+        
 
     def gradient(self, errors, features):
         ''' Computes the error gradient of the loss function (for a single epoch).
