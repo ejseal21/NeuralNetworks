@@ -140,7 +140,12 @@ class Adaline():
         grad_wts: ndarray. shape=(Num features,).
             Gradient with respect to the neuron weights in the input feature layer
         '''
-        pass
+
+        grad_bias = np.sum(errors)
+
+        grad_wts = np.sum(np.multiply(errors, features), axis = 1) 
+
+        return grad_bias, grad_wts
 
     def predict(self, features):
         '''Predicts the class of each test input sample
