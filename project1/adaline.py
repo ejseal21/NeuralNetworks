@@ -63,7 +63,10 @@ class Adaline():
         ----------
         The net_input. Shape = [Num samples,]
         '''
-        pass
+        
+        
+
+        
 
     def activation(self, net_in):
         '''
@@ -94,7 +97,12 @@ class Adaline():
         ----------
         float. The SSE loss (across a single training epoch).
         '''
-        pass
+        
+        #expecting loss to have shape [num samples, ] and be the loss for each input
+        loss = 0.5 * np.sum((y - net_act) ** 2)
+        print(loss)
+        return loss
+        
 
     def compute_accuracy(self, y, y_pred):
         ''' Computes accuracy (proportion correct) (across a single training epoch)
