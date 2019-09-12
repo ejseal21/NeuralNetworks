@@ -12,17 +12,17 @@ class Adaline():
 
     Network weights are organized [bias, wt1, wt2, wt3, ..., wtM] for a net with M input neurons.
     '''
-    def __init__(self, n_epochs=1000, lr=0.001):
+    def __init__(self, n_epochs=1000, learning_rate=0.001):
         '''
         Parameters:
         ----------
         n_epochs: (int)
             Number of epochs to use for training the network
-        lr: (float)
+        learning_rate: (float)
             Learning rate used in weight updates during training
         '''
         self.n_epochs = n_epochs
-        self.lr = lr
+        self.learning_rate = learning_rate
 
         # Network weights: Bias is stored in self.wts[0], wt for neuron 1 is at self.wts[1],
         # wt for neuron 2 is at self.wts[2], ...
@@ -42,11 +42,11 @@ class Adaline():
 
     def get_learning_rate(self):
         ''' Returns the learning rate'''
-        return self.lr
+        return self.learning_rate
 
-    def set_learning_rate(self, lr):
-        '''Updates the value of self.lr (learning rate)'''
-        self.lr = lr
+    def set_learning_rate(self, learning_rate):
+        '''Updates the value of self.learning_rate (learning rate)'''
+        self.learning_rate = learning_rate
 
     def net_input(self, features):
         ''' Computes the net_input (weighted sum of input features,  wts, bias)
