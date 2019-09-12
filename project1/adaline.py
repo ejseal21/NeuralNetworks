@@ -1,5 +1,5 @@
 '''adaline.py
-YOUR NAMES HERE
+Ethan Seal and Cole Turner
 CS343: Neural Networks
 Project 1: Single Layer Networks
 ADALINE (ADaptive LInear NEuron) neural network for classification and regression
@@ -78,7 +78,7 @@ class Adaline():
         ----------
         net_act. ndarray. Shape = [Num samples,]
         '''
-        pass
+        return net_in
 
     def compute_loss(self, y, net_act):
         ''' Computes the Sum of Squared Error (SSE) loss (over a single training epoch)
