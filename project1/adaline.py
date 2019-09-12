@@ -62,8 +62,10 @@ class Adaline():
         Returns:
         ----------
         The net_input. Shape = [Num samples,]
-        '''
-        net_input = np.sum(self.wts[1:]*features[1][1:] + self.wts[0])
+        ''''    
+        net_input = np.sum(np.multiply(features[1:, :], self.wts)  axis = 1) #shape should be Nx1
+        net_input = net_input + features[1, :]
+
         print("Net Input: " + net_input)
         return net_input
 
