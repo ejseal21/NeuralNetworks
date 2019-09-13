@@ -148,7 +148,7 @@ class Adaline():
 
         grad_bias = np.sum(errors)
 
-        grad_wts = np.sum(np.multiply(errors, features), axis = 1) 
+        grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
 
         return grad_bias, grad_wts
 
