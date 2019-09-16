@@ -6,7 +6,6 @@ ADALINE (ADaptive LInear NEuron) neural network for classification and regressio
 '''
 import numpy as np
 
-
 class Adaline():
     ''' Single-layer neural network
 
@@ -63,11 +62,14 @@ class Adaline():
         ----------
         The net_input. Shape = [Num samples,]
         '''    
+
+        # print("WEIGHTS IN NET INPUT")
+        # print(self.wts)
         net_input = np.dot(features, self.wts[1:]) 
         net_input += self.wts[0]
 
-        print("Net Input:", net_input)
-        print("Net Input shape:", net_input.shape)
+        # print("Net Input:", net_input)
+        # print("Net Input shape:", net_input.shape)
         return net_input
 
     def activation(self, net_in):
@@ -147,9 +149,13 @@ class Adaline():
             Gradient with respect to the neuron weights in the input feature layer
         '''
 
+
         grad_bias = np.sum(errors)
+        print(grad_bias)
 
         grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
+
+
 
         return grad_bias, grad_wts
 
@@ -199,14 +205,42 @@ class Adaline():
             - Compute the error, loss, and accuracy (across the entire epoch).
             - Do backprop to update the weights and bias.
         '''
+        # print(y)
+        self.wts = np.random.normal(0, 0.01, features.shape[1]+1)
 
-        self.wts = np.random.normal(0, 0.01, y.size)
-        
+        loss_history = []
+        accuracy_history = []
+
+
+        accuracy = 0
+        loss = 0
         for epoch in range(self.n_epochs):
+            #pass the inputs through
+            
+
+            net_in = self.net_input(features)
             predictions = self.predict(features)
 
+            # print(predictions.shape)
+            # print(predictions)
+            # print(y)
+            #compute error, loss, and accuracy
             accuracy = self.compute_accuracy(y,predictions)
-            loss = self.compute_loss(y, self.activation)
-            error = 
+            loss = self.compute_loss(y, net_in)
 
+            error = y - net_in
+            print(error)
+
+            #store the loss and accuracy values
+            loss_history.append(loss)
+            accuracy_history.append(accuracy)
+            
+            #backprop
+            self.wts[1:] = self.wts[1:] + self.learning_rate * np.dot(y[1:] - net_in[1:], features[1:, :])
+            self.wts[0] = self.wts[0] + (self.learning_rate * np.sum(y[1:] - net_in[1:]))
+            # self.wts[0], self.wts[1:] = self.gradient(error, features)
+            
         
+        self.loss_history = loss_history
+        self.accuracy_history = accuracy_history
+        return loss_history, accuracy_history
