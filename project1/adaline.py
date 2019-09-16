@@ -63,10 +63,11 @@ class Adaline():
         ----------
         The net_input. Shape = [Num samples,]
         '''    
-        net_input = np.sum(np.multiply(features[1:, :], self.wts),  axis = 1) #shape should be Nx1
-        net_input = net_input + features[1, :]
+        net_input = np.dot(features, self.wts[1:]) 
+        net_input += self.wts[0]
 
-        print("Net Input: " + net_input)
+        print("Net Input:", net_input)
+        print("Net Input shape:", net_input.shape)
         return net_input
 
     def activation(self, net_in):
@@ -166,7 +167,12 @@ class Adaline():
 
         NOTE: Remember to apply the activation function!
         '''
-        pass
+        
+      
+        activations = self.activation(self.net_input(features))
+        activations[activations < 0] = -1
+        activations[activations >= 0] = 1
+        return activations.astype(int)
 
     def fit(self, features, y):
         ''' Trains the network on the input features for self.n_epochs number of epochs
@@ -193,4 +199,4 @@ class Adaline():
             - Compute the error, loss, and accuracy (across the entire epoch).
             - Do backprop to update the weights and bias.
         '''
-        pass
+        
