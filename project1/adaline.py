@@ -11,7 +11,7 @@ class Adaline():
 
     Network weights are organized [bias, wt1, wt2, wt3, ..., wtM] for a net with M input neurons.
     '''
-    def __init__(self, n_epochs=1000, learning_rate=0.001):
+    def __init__(self, n_epochs=2000, learning_rate=0.001):
         '''
         Parameters:
         ----------
@@ -177,7 +177,7 @@ class Adaline():
         activations[activations >= 0] = 1
         return activations.astype(int)
 
-    def fit(self, features, y):
+    def fit(self, features, y, early_stopping=False, loss_tol=0.1):
         ''' Trains the network on the input features for self.n_epochs number of epochs
 
         Parameters:
@@ -202,19 +202,18 @@ class Adaline():
             - Compute the error, loss, and accuracy (across the entire epoch).
             - Do backprop to update the weights and bias.
         '''
-        # print(y)
         self.wts = np.random.normal(0, 0.01, features.shape[1]+1)
 
         loss_history = []
         accuracy_history = []
 
-
         accuracy = 0
         loss = 0
         for epoch in range(self.n_epochs):
             
+            
             #pass the inputs through
-            net_in = self.net_input(features) # TODO: compute netact
+            net_in = self.net_input(features) # compute netact
             activation = self.activation(net_in)
             predictions = self.predict(features)
 
@@ -223,6 +222,11 @@ class Adaline():
             loss = self.compute_loss(y, activation)
 
             error = y - activation
+            if early_stopping and (epoch > 1):
+                if abs(loss-loss_history[-1]) < loss_tol:
+                    print("epoch:", epoch, "\nloss:", loss-loss_history[-1])
+                    break
+ 
             #store the loss and accuracy values
             loss_history.append(loss)
             accuracy_history.append(accuracy)
@@ -233,8 +237,6 @@ class Adaline():
             self.wts[1:] = self.wts[1:] + self.learning_rate * grad_wts
             self.wts[0] = self.wts[0] + self.learning_rate * grad_bias
             
-            
-        
         self.loss_history = loss_history
         self.accuracy_history = accuracy_history
         return loss_history, accuracy_history
