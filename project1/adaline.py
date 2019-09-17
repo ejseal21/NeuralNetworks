@@ -63,13 +63,11 @@ class Adaline():
         The net_input. Shape = [Num samples,]
         '''    
 
-        # print("WEIGHTS IN NET INPUT")
-        # print(self.wts)
+
         net_input = np.dot(features, self.wts[1:]) 
         net_input += self.wts[0]
 
-        # print("Net Input:", net_input)
-        # print("Net Input shape:", net_input.shape)
+
         return net_input
 
     def activation(self, net_in):
@@ -151,7 +149,6 @@ class Adaline():
 
 
         grad_bias = np.sum(errors)
-        print(grad_bias)
 
         grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
 
@@ -215,30 +212,27 @@ class Adaline():
         accuracy = 0
         loss = 0
         for epoch in range(self.n_epochs):
-            #pass the inputs through
             
-
-            net_in = self.net_input(features)
+            #pass the inputs through
+            net_in = self.net_input(features) # TODO: compute netact
+            activation = self.activation(net_in)
             predictions = self.predict(features)
 
-            # print(predictions.shape)
-            # print(predictions)
-            # print(y)
             #compute error, loss, and accuracy
             accuracy = self.compute_accuracy(y,predictions)
-            loss = self.compute_loss(y, net_in)
+            loss = self.compute_loss(y, activation)
 
-            error = y - net_in
-            print(error)
-
+            error = y - activation
             #store the loss and accuracy values
             loss_history.append(loss)
             accuracy_history.append(accuracy)
+
+            grad_bias, grad_wts = self.gradient(error, features)
             
             #backprop
-            self.wts[1:] = self.wts[1:] + self.learning_rate * np.dot(y[1:] - net_in[1:], features[1:, :])
-            self.wts[0] = self.wts[0] + (self.learning_rate * np.sum(y[1:] - net_in[1:]))
-            # self.wts[0], self.wts[1:] = self.gradient(error, features)
+            self.wts[1:] = self.wts[1:] + self.learning_rate * grad_wts
+            self.wts[0] = self.wts[0] + self.learning_rate * grad_bias
+            
             
         
         self.loss_history = loss_history
