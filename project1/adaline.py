@@ -224,7 +224,7 @@ class Adaline():
             error = y - activation
             if early_stopping and (epoch > 1):
                 if abs(loss-loss_history[-1]) < loss_tol:
-                    print("epoch:", epoch, "\nloss:", loss-loss_history[-1])
+                    print("epoch:", epoch, "\nloss difference:", loss-loss_history[-1])
                     break
  
             #store the loss and accuracy values
