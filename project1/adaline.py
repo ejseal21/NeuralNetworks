@@ -220,7 +220,7 @@ class Adaline():
             #compute error, loss, and accuracy
             accuracy = self.compute_accuracy(y,predictions)
             loss = self.compute_loss(y, activation)
-
+            # print(loss)
             error = y - activation
             if early_stopping and (epoch > 1):
                 if abs(loss-loss_history[-1]) < loss_tol:
