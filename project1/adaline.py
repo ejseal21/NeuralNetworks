@@ -154,11 +154,11 @@ class Adaline():
         # print(errors.shape)
 
         grad_bias = np.sum(errors)
-        grad_wts = features.T @ errors
+        # grad_wts = features.T @ errors
 
         # print("GRADIENT WEIGHTS")
         # print(grad_wts.shape)
-        # grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
+        grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
 
 
 
