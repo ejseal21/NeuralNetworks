@@ -147,10 +147,18 @@ class Adaline():
             Gradient with respect to the neuron weights in the input feature layer
         '''
 
+        # print("FEATURES SHAPES")
+        # print(features.shape)
+
+        # print("ERRORS SHAPE")
+        # print(errors.shape)
 
         grad_bias = np.sum(errors)
+        grad_wts = features.T @ errors
 
-        grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
+        # print("GRADIENT WEIGHTS")
+        # print(grad_wts.shape)
+        # grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0) 
 
 
 
@@ -220,7 +228,6 @@ class Adaline():
             #compute error, loss, and accuracy
             accuracy = self.compute_accuracy(y,predictions)
             loss = self.compute_loss(y, activation)
-            # print(loss)
             error = y - activation
             if early_stopping and (epoch > 1):
                 if abs(loss-loss_history[-1]) < loss_tol:
