@@ -218,7 +218,10 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - np.sum and np.max have a keepdims optional parameter that might be useful for avoiding
         going from shape=(X, Y) -> (X,). keepdims ensures the result has shape (X, 1).
         '''
-        pass
+        net_in_max = np.max(net_in, keepdims=True)
+        net_act = np.exp(net_in - net_in_max) / np.sum(np.exp(net_in - net_in_max), axis=1, keepdims=True)
+
+        return net_act
 
     def loss(self, net_in, y, reg=0):
         '''Computes the cross-entropy loss
