@@ -57,7 +57,9 @@ class SingleLayerNet():
         -----------
         net_input: ndarray. shape=(N, C)
         '''
-        pass
+        
+        net_input = np.dot(features, self.wts[1:]) 
+        net_input += self.wts[0]
 
     def one_hot(self, y, num_classes):
         '''One-hot codes the output classes for a mini-batch
@@ -246,7 +248,8 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         '''
-        pass
+        loss = (-1 / net_in.shape[0]) * np.sum(np.log(activation(net_in)))
+        return loss
 
     def gradient(self, features, net_act, y, reg=0):
         '''Computes the gradient of the softmax version of the net
