@@ -27,11 +27,11 @@ def preprocess_stl(imgs, labels):
     '''
 
     imgs = imgs.astype(np.float64)
-    print(imgs.max())
-    imgs = imgs/255.0    
+    # imgs = imgs - imgs.mean
+    imgs = (imgs - imgs.mean(axis=(0,1,2), keepdims=True)) / 255.0
+    # imgs = (imgs)/imgs.std()    
 
     imgs = np.reshape(imgs, (5000, 3072))
-    imgs = imgs - imgs.mean()
     labels = labels - 1
 
     return imgs, labels

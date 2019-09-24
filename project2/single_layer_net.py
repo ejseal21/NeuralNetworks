@@ -73,7 +73,16 @@ class SingleLayerNet():
             e.g. if y = [0, 2, 1] and num_classes (C) = 4 we have:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0]]
         '''
-        pass
+
+        one_hot_out = np.zeros((len(y), num_classes))
+        one_hot_out[np.arange(len(y)), y] = 1
+
+        # for num in range(len(y)):
+        #     temp = np.zeros(num_classes)
+        #     temp[y[num]] = 1
+        #     one_hot_out.append(temp)
+
+        return one_hot_out
 
     def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2):
         ''' Trains the network to data in `features` belonging to the int-coded classes `y`.
