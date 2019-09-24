@@ -115,6 +115,8 @@ class SingleLayerNet():
         -----------
         1) Initialize the wts/bias to small Gaussian numbers:
             mean 0, std 0.01, Wts shape=(num_feat, num_classes), b shape=(num_classes,)
+
+
         2) Implement mini-batch support: On every iter draw from our input samples (with replacement)
         a batch of samples equal in size to `mini_batch_sz`. Also keep track of the associated labels.
         THEY MUST MATCH UP!!
@@ -142,6 +144,8 @@ class SingleLayerNet():
         2) Work in indices, not data elements.
         '''
 
+        # initialize weights.
+        # self.wts = np.random.normal(0, 0.01, features.shape[1]+1)
         num_samps, num_features = features.shape
         num_classes = len(np.unique(y))
 
