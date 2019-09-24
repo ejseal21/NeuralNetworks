@@ -49,6 +49,16 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
 
     TODO:
     1) Divvy up the images into train/test/validation/development non-overlapping subsets (see return vars)
+
+
+    Train data shape:  (3500, 3072)
+    Train labels shape:  (3500,)
+    Test data shape:  (500, 3072)
+    Test labels shape:  (500,)
+    Validation data shape:  (500, 3072)
+    Validation labels shape:  (500,)
+    dev data shape:  (500, 3072)
+    dev labels shape:  (500,)
     '''
 
     if n_train_samps + n_test_samps + n_valid_samps + n_dev_samps != len(data):
@@ -57,5 +67,16 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
         return
 
     # FILL IN CODE HERE
+
+    #reshape the data into respective sizes and compress last 
+    x_train = data[0:int(len(data)*.7), :,:,:].reshape(3500,3072)
+    y_train = y[0:int(len(y)*.7)]
+    x_test = data[int(len(data)*.7):int(len(data)*.8), :].reshape(500,3072)
+    y_test = y[int(len(y)*.7):int(len(y)*.8)]
+    x_val = data[int(len(data)*.8):int(len(data)*.9), :].reshape(500,3072)
+    y_val = y[int(len(y)*.8):int(len(y)*.9)]
+    x_dev = data[int(len(data)*.9):, :].reshape(500,3072)
+    y_dev = y[int(len(y)*.9):]
+
 
     return x_train, y_train, x_test, y_test, x_val, y_val, x_dev, y_dev
