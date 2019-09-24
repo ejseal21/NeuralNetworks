@@ -25,7 +25,17 @@ def preprocess_stl(imgs, labels):
     3) Compute the mean image across the dataset, subtract it from the dataset
     4) Fix class labeling. Should span 0, 1, ..., 9 NOT 1,2,...10
     '''
-    pass
+
+    imgs = imgs.astype(np.float64)
+    print(imgs.max())
+    imgs = imgs/255.0    
+
+    imgs = np.reshape(imgs, (5000, 3072))
+    imgs = imgs - imgs.mean()
+    labels = labels - 1
+
+    return imgs, labels
+    
 
 
 def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=500, n_dev_samps=500):
