@@ -57,9 +57,10 @@ class SingleLayerNet():
         -----------
         net_input: ndarray. shape=(N, C)
         '''
-        
-        net_input = np.dot(features, self.wts[1:]) 
+        features = np.reshape(features, (15, 3072))
+        net_input = np.dot(features, self.wts)
         net_input += self.wts[0]
+        return net_input
 
     def one_hot(self, y, num_classes):
         '''One-hot codes the output classes for a mini-batch
@@ -248,7 +249,7 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         '''
-        loss = (-1 / net_in.shape[0]) * np.sum(np.log(activation(net_in)))
+        loss = (-1 / net_in.shape[0]) * np.sum(np.log(self.activation(net_in)))
         return loss
 
     def gradient(self, features, net_act, y, reg=0):
