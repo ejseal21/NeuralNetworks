@@ -76,7 +76,7 @@ class SingleLayerNet():
             e.g. if y = [0, 2, 1] and num_classes (C) = 4 we have:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0]]
         '''
-
+        y = y - 1 #test_gradient was giving an error because y was not preprocessed
         one_hot_out = np.zeros((len(y), num_classes))
         one_hot_out[np.arange(len(y)), y] = 1
 
@@ -249,7 +249,20 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         '''
-        loss = (-1 / net_in.shape[0]) * np.sum(np.log(self.activation(net_in)))
+
+        #need to index into net_in at the correct output neuron to get the predicted probability of the correct class 
+        #index for net_in[index] comes from the corresponding row of y
+        print("y:", y)
+        rows = np.arange(net_in.shape[0])
+        correct_neurons = net_in[:, y[rows]]
+
+        print("correct_neurons", correct_neurons)
+
+
+        loss = self.activation(net_in) * (-1) #negative softmax activation values
+
+
+        # loss = (-1 / net_in.shape[0]) * np.sum(np.log(self.activation(net_in)))
         return loss
 
     def gradient(self, features, net_act, y, reg=0):
@@ -274,7 +287,7 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
-        num_inputs = len(features)
+        num_inputs = len(features)  
         pass
 
     def test_loss(self, wts, b, features, labels):
