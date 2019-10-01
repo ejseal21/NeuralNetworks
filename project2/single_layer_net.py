@@ -249,13 +249,16 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         ''' 
+        y = y-1
         net_act = self.activation(net_in)
-        print("sum of net_act",np.sum(net_act))
-        likelihood = -np.log(net_act[np.arange(y.shape[0]), np.expand_dims(y-1, 1)])
-        print("likelihood", likelihood)
-        loss =  (1 - (.5*reg)) * np.sum(np.linalg.norm(likelihood))/y.shape[0] #will not work for reg != 0, 1
-        print("loss:", loss)
+        y = y.astype(int)
+        avg = np.mean(net_act[np.arange(net_act.shape[0]), y], axis = 0)
 
+        loss = -np.log(avg) + (0.5 * np.sum(np.square(self.wts)))
+
+        # likelihood = -np.log(np.mean(net_act[np.arange(y.shape[0]), np.expand_dims(y-1, 1)]), axis=0)
+        # loss =  (1 - (.5*reg)) * np.linalg.norm(likelihood)#will not work for reg != 0, 1
+        
         # loss = self.activation(net_in) * (-1) #negative softmax activation values
 
 
