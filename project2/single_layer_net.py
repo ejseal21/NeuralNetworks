@@ -76,7 +76,7 @@ class SingleLayerNet():
             e.g. if y = [0, 2, 1] and num_classes (C) = 4 we have:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0]]
         '''
-        y = y - 1 #test_gradient was giving an error because y was not preprocessed
+        # y = y - 1 #test_gradient was  giving an error because y was not preprocessed
         one_hot_out = np.zeros((len(y), num_classes))
         one_hot_out[np.arange(len(y)), y] = 1
 
@@ -85,7 +85,7 @@ class SingleLayerNet():
         #     temp[y[num]] = 1
         #     one_hot_out.append(temp)
 
-        return one_hot_out
+        return one_hot_out.astype(int)
 
     def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2):
         ''' Trains the network to data in `features` belonging to the int-coded classes `y`.
@@ -250,12 +250,14 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         '''
 
-        #need to index into net_in at the correct output neuron to get the predicted probability of the correct class 
+        #need to index into net_in at the correct output neuron to get the predicted probability of the correct class
         #index for net_in[index] comes from the corresponding row of y
-        print("y:", y)
-        rows = np.arange(net_in.shape[0])
-        correct_neurons = net_in[:, y[rows]]
-
+        # print("y:", y)
+        # print("net_in:",net_in)
+        arange = np.arange(y.shape[0])
+        # print("arange" , arange)
+        print('y', y)  
+        correct_neurons = net_in[[arange], y[arange]] #should be an (N,) vector with only the values from the correct neurons
         print("correct_neurons", correct_neurons)
 
 
@@ -287,8 +289,10 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
+        net_in = self.net_in(features)
+        loss = self.loss(net_in, y)
         num_inputs = len(features)  
-        pass
+        return (1, 2)
 
     def test_loss(self, wts, b, features, labels):
         ''' Tester method for net_in and loss
@@ -315,7 +319,8 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         print(f'net in: {net_in.shape}, {net_in.min()}, {net_in.max()}')
 
         net_act = self.activation(net_in)
-
+        labels = labels - 1
+        print("len(labels)",len(labels))
         labels_one_hot = self.one_hot(labels, num_unique_classes)
         print(f'y one hot: {labels_one_hot.shape}, sum is {np.sum(labels_one_hot)}')
 
