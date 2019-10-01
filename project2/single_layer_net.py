@@ -248,20 +248,15 @@ class SingleLayerNetSoftmax(SingleLayerNet):
           output neurons.
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
-        '''
+        ''' 
+        net_act = self.activation(net_in)
+        print("sum of net_act",np.sum(net_act))
+        likelihood = -np.log(net_act[np.arange(y.shape[0]), np.expand_dims(y-1, 1)])
+        print("likelihood", likelihood)
+        loss =  (1 - (.5*reg)) * np.sum(np.linalg.norm(likelihood))/y.shape[0] #will not work for reg != 0, 1
+        print("loss:", loss)
 
-        #need to index into net_in at the correct output neuron to get the predicted probability of the correct class
-        #index for net_in[index] comes from the corresponding row of y
-        # print("y:", y)
-        # print("net_in:",net_in)
-        arange = np.arange(y.shape[0])
-        # print("arange" , arange)
-        print('y', y)  
-        correct_neurons = net_in[[arange], y[arange]] #should be an (N,) vector with only the values from the correct neurons
-        print("correct_neurons", correct_neurons)
-
-
-        loss = self.activation(net_in) * (-1) #negative softmax activation values
+        # loss = self.activation(net_in) * (-1) #negative softmax activation values
 
 
         # loss = (-1 / net_in.shape[0]) * np.sum(np.log(self.activation(net_in)))
