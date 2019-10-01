@@ -80,7 +80,7 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
     # FILL IN CODE HERE
 
     #reshape the data into respective sizes and compress last 
-    x_train = data[0:int(len(data)*.7), :,:,:].reshape(3500,3072)
+    x_train = data[0:int(len(data)*.7), :].reshape(3500,3072)
     y_train = y[0:int(len(y)*.7)]
     x_test = data[int(len(data)*.7):int(len(data)*.8), :].reshape(500,3072)
     y_test = y[int(len(y)*.7):int(len(y)*.8)]

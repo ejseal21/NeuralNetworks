@@ -57,9 +57,9 @@ class SingleLayerNet():
         -----------
         net_input: ndarray. shape=(N, C)
         '''
-        features = np.reshape(features, (15, 3072))
+        # features = np.reshape(features, (15, 3072))
         net_input = np.dot(features, self.wts)
-        net_input += self.wts[0]
+        net_input += self.b
         return net_input
 
     def one_hot(self, y, num_classes):
@@ -238,7 +238,7 @@ class SingleLayerNetSoftmax(SingleLayerNet):
 
         Returns:
         -----------
-        loss: float. Regularized (!!!!) average loss over the mini batch
+        loss: float. Regularized (!!!!) average loss over the mini batch 1
 
         Tips:
         -----------
@@ -249,12 +249,15 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         ''' 
-        y = y-1
+        # y = y-1
+        # return 2
         net_act = self.activation(net_in)
-        y = y.astype(int)
-        avg = np.mean(net_act[np.arange(net_act.shape[0]), y], axis = 0)
+        # print(net_act.shape)
+        # # return    
+        
+        correctActs = net_act[np.arange(net_act.shape[0]), y]
 
-        loss = -np.log(avg) + (0.5 * np.sum(np.square(self.wts)))
+        loss = -np.mean(np.log(correctActs), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
 
         # likelihood = -np.log(np.mean(net_act[np.arange(y.shape[0]), np.expand_dims(y-1, 1)]), axis=0)
         # loss =  (1 - (.5*reg)) * np.linalg.norm(likelihood)#will not work for reg != 0, 1
@@ -278,7 +281,7 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         reg: float. regularization strength.
 
         Returns:
-        -----------
+        ----------- 
         grad_wts: ndarray. Weight gradient. shape=(Num features, C)
         grad_b: ndarray. Bias gradient. shape=(C,)
 
