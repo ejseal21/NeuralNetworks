@@ -249,23 +249,12 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Remember to add on the regularization term, which has a 1/2 in front of it.
         ''' 
-        # y = y-1
-        # return 2
+
         net_act = self.activation(net_in)
-        # print(net_act.shape)
-        # # return    
-        
+       
         correctActs = net_act[np.arange(net_act.shape[0]), y]
 
         loss = -np.mean(np.log(correctActs), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
-
-        # likelihood = -np.log(np.mean(net_act[np.arange(y.shape[0]), np.expand_dims(y-1, 1)]), axis=0)
-        # loss =  (1 - (.5*reg)) * np.linalg.norm(likelihood)#will not work for reg != 0, 1
-        
-        # loss = self.activation(net_in) * (-1) #negative softmax activation values
-
-
-        # loss = (-1 / net_in.shape[0]) * np.sum(np.log(self.activation(net_in)))
         return loss
 
     def gradient(self, features, net_act, y, reg=0):
@@ -281,7 +270,7 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         reg: float. regularization strength.
 
         Returns:
-        ----------- 
+        -----------   
         grad_wts: ndarray. Weight gradient. shape=(Num features, C)
         grad_b: ndarray. Bias gradient. shape=(C,)
 
@@ -290,10 +279,15 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
-        net_in = self.net_in(features)
-        loss = self.loss(net_in, y)
-        num_inputs = len(features)  
-        return (1, 2)
+        errors = y - net_act
+        grad_bias = np.sum(errors)/features.shape[0]
+        # grad_wts = features.T @ errors
+
+        # print("GRADIENT WEIGHTS")
+        # print(grad_wts.shape)
+        grad_wts = (np.sum(np.multiply(errors, features), axis = 0) + reg*(0.5 * np.sum(np.square(self.wts))))/features.shape[0]
+
+        return grad_bias, grad_wts
 
     def test_loss(self, wts, b, features, labels):
         ''' Tester method for net_in and loss
