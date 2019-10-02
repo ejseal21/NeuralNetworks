@@ -280,22 +280,26 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
 
-        print(net_act)
-
-        errors = y.T - net_act.T
-        print(errors)
-        print(errors.shape)
-        grad_bias = np.sum(errors)/features.shape[0]
+        # print(net_act)
+        batch_size = features.shape[0]
+        errors = y - net_act #errors should be (mini-batch size, C)
+        # print(errors)
+        print("etf", (errors.T @ features).shape)
+        print('rwt', (reg * self.wts).shape)
+        # print("fet", features.shape)
+        grad_bias = np.sum(errors, axis = 0)/features.shape[0]
         # grad_wts = features.T @ errors
 
         # print("GRADIENT WEIGHTS")
         # print(grad_wts.shape)
-        grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
+        grad_wts = (errors.T @ features) + (reg * self.wts.T) / batch_size
+        
+        # grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
 
-        print(grad_wts.shape)
+        # print(grad_wts.shape)
 
-        print(grad_wts)
-        print(grad_bias)
+        # print(grad_wts)
+        # print(grad_bias)
 
         return grad_wts, grad_bias
 
