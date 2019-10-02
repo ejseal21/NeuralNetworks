@@ -279,15 +279,25 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - NO FOR LOOPS!
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
-        errors = y - net_act
+
+        print(net_act)
+
+        errors = y.T - net_act.T
+        print(errors)
+        print(errors.shape)
         grad_bias = np.sum(errors)/features.shape[0]
         # grad_wts = features.T @ errors
 
         # print("GRADIENT WEIGHTS")
         # print(grad_wts.shape)
-        grad_wts = (np.sum(np.multiply(errors, features), axis = 0) + reg*(0.5 * np.sum(np.square(self.wts))))/features.shape[0]
+        grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
 
-        return grad_bias, grad_wts
+        print(grad_wts.shape)
+
+        print(grad_wts)
+        print(grad_bias)
+
+        return grad_wts, grad_bias
 
     def test_loss(self, wts, b, features, labels):
         ''' Tester method for net_in and loss
