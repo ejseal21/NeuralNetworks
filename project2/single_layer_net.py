@@ -281,21 +281,27 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         '''
 
         # print(net_act)
-        batch_size = features.shape[0]
-        errors = y - net_act #errors should be (mini-batch size, C)
+        batch_size = net_act.shape[0]
+        errors = net_act - y #errors should be (mini-batch size, C) <--this seems right now
+
+
         # print(errors)
         print("etf", (errors.T @ features).shape)
         print('rwt', (reg * self.wts).shape)
         # print("fet", features.shape)
-        grad_bias = np.sum(errors, axis = 0)/features.shape[0]
+        grad_bias =  np.sum(errors, axis = 0)/batch_size 
         # grad_wts = features.T @ errors
 
         # print("GRADIENT WEIGHTS")
         # print(grad_wts.shape)
-        grad_wts = (errors.T @ features) + (reg * self.wts.T) / batch_size
-        
-        # grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
+        grad_wts = (1/batch_size) * (features.T @ errors) + .5*(reg * self.wts)
 
+        #grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0)
+        # grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
+        print("SHAPES")
+        print(features.shape)
+        print(grad_wts.shape)
+        print(grad_bias.shape)
         # print(grad_wts.shape)
 
         # print(grad_wts)
