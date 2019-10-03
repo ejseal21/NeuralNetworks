@@ -76,7 +76,6 @@ class SingleLayerNet():
             e.g. if y = [0, 2, 1] and num_classes (C) = 4 we have:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0]]
         '''
-        # y = y - 1 #test_gradient was  giving an error because y was not preprocessed
         one_hot_out = np.zeros((len(y), num_classes))
         one_hot_out[np.arange(len(y)), y] = 1
 
@@ -142,25 +141,52 @@ class SingleLayerNet():
         2) Work in indices, not data elements.
         '''
 
-        # initialize weights.
-        # self.wts = np.random.normal(0, 0.01, features.shape[1]+1)
         num_samps, num_features = features.shape
         num_classes = len(np.unique(y))
 
         iter_per_epoch = max(int(num_samps / mini_batch_sz), 1)
         n_iter = n_epochs * iter_per_epoch
 
-        # TODO: Initialize wts, bias here
+        # initialize weights and bias
         self.wts = np.random.normal(0, 0.01, (num_features, num_classes))
         self.b = np.random.normal(0, 0.01, (num_classes,))
 
+        #initialize loss and acc stuff
         loss_history = []
+        loss = 0
+        accuracy_history = []
+        accuracy = 0
 
+        
         if verbose > 0:
             print(f'Starting to train network...There will be {n_epochs} epochs', end='')
             print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
 
-            # TODO: Put this inside training loop
+        for i in range(self.n_epochs): #loop over all epochs
+            
+            #generate random indices with replacement for cur_samps and cur_labels
+            #indices are guaranteed to match for samps and labels
+            random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
+            cur_samps = features[random_indices, :]
+            cur_labels = y[random_indices, :]
+
+            if mini_batch_sz = 1:
+                #not confident that the axis is correct
+                cur_samps = np.expand_dims(cur_samps, 0)
+                #not confident that I have to do it for cur_labels as well
+                cur_labels = np.expand_dims(cur_labels, 0)
+            
+            #get one-hots for the classes of the samples we care about
+            one_hot_labels = self.one_hot(cur_labels, num_classes) 
+
+            cur_net_in = self.net_in(cur_samps)
+            cur_net_act = self.activation(cur_net_in)
+
+            loss = self.loss(cur_net_in, cur_labels)
+            
+            
+
+
             if i % 100 == 0 and verbose > 0:
                 print(f'  Completed iter {i}/{n_iter}. Training loss: {loss:.2f}.')
 
