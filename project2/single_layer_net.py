@@ -80,11 +80,6 @@ class SingleLayerNet():
         one_hot_out = np.zeros((len(y), num_classes))
         one_hot_out[np.arange(len(y)), y] = 1
 
-        # for num in range(len(y)):
-        #     temp = np.zeros(num_classes)
-        #     temp[y[num]] = 1
-        #     one_hot_out.append(temp)
-
         return one_hot_out.astype(int)
 
     def fit(self, features, y, n_epochs=10000, lr=0.0001, mini_batch_sz=256, reg=0, verbose=2):
@@ -283,29 +278,8 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         # print(net_act)
         batch_size = net_act.shape[0]
         errors = net_act - y #errors should be (mini-batch size, C) <--this seems right now
-
-
-        # print(errors)
-        print("etf", (errors.T @ features).shape)
-        print('rwt', (reg * self.wts).shape)
-        # print("fet", features.shape)
-        grad_bias =  np.sum(errors, axis = 0)/batch_size 
-        # grad_wts = features.T @ errors
-
-        # print("GRADIENT WEIGHTS")
-        # print(grad_wts.shape)
-        grad_wts = (1/batch_size) * (features.T @ errors) + .5*(reg * self.wts)
-
-        #grad_wts = np.sum(np.multiply(np.expand_dims(errors, 1), features), axis = 0)
-        # grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
-        print("SHAPES")
-        print(features.shape)
-        print(grad_wts.shape)
-        print(grad_bias.shape)
-        # print(grad_wts.shape)
-
-        # print(grad_wts)
-        # print(grad_bias)
+        grad_bias =  np.sum(errors, axis=0)/batch_size 
+        grad_wts = ((1/batch_size) * (features.T @ errors)) + (reg * self.wts)
 
         return grad_wts, grad_bias
 
@@ -334,7 +308,6 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         print(f'net in: {net_in.shape}, {net_in.min()}, {net_in.max()}')
 
         net_act = self.activation(net_in)
-        labels = labels - 1
         print("len(labels)",len(labels))
         labels_one_hot = self.one_hot(labels, num_unique_classes)
         print(f'y one hot: {labels_one_hot.shape}, sum is {np.sum(labels_one_hot)}')
