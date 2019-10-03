@@ -156,6 +156,8 @@ class SingleLayerNet():
         n_iter = n_epochs * iter_per_epoch
 
         # TODO: Initialize wts, bias here
+        self.wts = np.random.normal(0, 0.01, (num_features, num_classes))
+        self.b = np.random.normal(0, 0.01, (num_classes,))
 
         loss_history = []
 
@@ -280,26 +282,10 @@ class SingleLayerNetSoftmax(SingleLayerNet):
         - Don't forget regularization!!!! (Weights only, not for bias)
         '''
 
-        # print(net_act)
         batch_size = features.shape[0]
-        errors = y - net_act #errors should be (mini-batch size, C)
-        # print(errors)
-        print("etf", (errors.T @ features).shape)
-        print('rwt', (reg * self.wts).shape)
-        # print("fet", features.shape)
-        grad_bias = np.sum(errors, axis = 0)/features.shape[0]
-        # grad_wts = features.T @ errors
-
-        # print("GRADIENT WEIGHTS")
-        # print(grad_wts.shape)
+        errors = net_act - y #errors should be (mini-batch size, C)
+        grad_bias = np.sum(errors, axis = 0)/batch_size
         grad_wts = (errors.T @ features) + (reg * self.wts.T) / batch_size
-        
-        # grad_wts = (np.sum(errors.T @ features) + reg*(0.5 * np.sum(np.square(self.wts))))/np.sum(features)
-
-        # print(grad_wts.shape)
-
-        # print(grad_wts)
-        # print(grad_bias)
 
         return grad_wts, grad_bias
 
