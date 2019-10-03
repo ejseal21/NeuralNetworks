@@ -162,15 +162,15 @@ class SingleLayerNet():
             print(f'Starting to train network...There will be {n_epochs} epochs', end='')
             print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
 
-        for i in range(self.n_epochs): #loop over all epochs
+        for i in range(n_epochs): #loop over all epochs
             
             #generate random indices with replacement for cur_samps and cur_labels
             #indices are guaranteed to match for samps and labels
             random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
             cur_samps = features[random_indices, :]
-            cur_labels = y[random_indices, :]
+            cur_labels = y
 
-            if mini_batch_sz = 1:
+            if mini_batch_sz == 1:
                 #not confident that the axis is correct
                 cur_samps = np.expand_dims(cur_samps, 0)
                 #not confident that I have to do it for cur_labels as well
@@ -182,7 +182,17 @@ class SingleLayerNet():
             cur_net_in = self.net_in(cur_samps)
             cur_net_act = self.activation(cur_net_in)
 
+            print(cur_net_in.shape)
+            print(cur_labels.shape)
+            print(y.shape)
+            print()
+
             loss = self.loss(cur_net_in, cur_labels)
+            
+            loss_history.append(loss)
+            accuracy = self.accuracy(y, cur_labels)
+
+            accuracy_history.append(accuracy)
             
             
 
