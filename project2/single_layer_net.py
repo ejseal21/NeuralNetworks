@@ -151,6 +151,8 @@ class SingleLayerNet():
         n_iter = n_epochs * iter_per_epoch
 
         # TODO: Initialize wts, bias here
+        self.wts = np.random.normal(0, 0.01, (num_features, num_classes))
+        self.b = np.random.normal(0, 0.01, (num_classes,))
 
         loss_history = []
 
