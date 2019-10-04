@@ -139,6 +139,7 @@ class SingleLayerNet():
         HINTS:
         -----------
         2) Work in indices, not data elements.
+
         '''
 
         num_samps, num_features = features.shape
@@ -146,58 +147,49 @@ class SingleLayerNet():
 
         iter_per_epoch = max(int(num_samps / mini_batch_sz), 1)
         n_iter = n_epochs * iter_per_epoch
-
+        
         # initialize weights and bias
         self.wts = np.random.normal(0, 0.01, (num_features, num_classes))
         self.b = np.random.normal(0, 0.01, (num_classes,))
 
         #initialize loss and acc stuff
         loss_history = []
-        loss = 0
-        accuracy_history = []
-        accuracy = 0
-
         
         if verbose > 0:
             print(f'Starting to train network...There will be {n_epochs} epochs', end='')
             print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
+        
 
-        for i in range(n_epochs): #loop over all epochs
-            
+        for i in range(n_iter):                    
             #generate random indices with replacement for cur_samps and cur_labels
             #indices are guaranteed to match for samps and labels
             random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
-            cur_samps = features[random_indices, :]
-            cur_labels = y
+            cur_samps = features[random_indices]
+            cur_labels = y[random_indices]
 
             if mini_batch_sz == 1:
                 #not confident that the axis is correct
                 cur_samps = np.expand_dims(cur_samps, 0)
                 #not confident that I have to do it for cur_labels as well
                 cur_labels = np.expand_dims(cur_labels, 0)
-            
+        
             #get one-hots for the classes of the samples we care about
             one_hot_labels = self.one_hot(cur_labels, num_classes) 
-
             cur_net_in = self.net_in(cur_samps)
             cur_net_act = self.activation(cur_net_in)
 
-            print(cur_net_in.shape)
-            print(cur_labels.shape)
-            print(y.shape)
-            print()
-
-            loss = self.loss(cur_net_in, cur_labels)
-            
+            #compute the loss
+            loss = self.loss(cur_net_in, cur_labels, reg)
             loss_history.append(loss)
-            accuracy = self.accuracy(y, cur_labels)
-
-            accuracy_history.append(accuracy)
-            
-            
+ 
+            #compute the gradient and update weights
+            grad_wts, grad_b = self.gradient(cur_samps, cur_net_act, one_hot_labels, reg)         
+            self.wts = self.wts - lr * grad_wts
+            self.b = self.b - lr * grad_b
 
 
             if i % 100 == 0 and verbose > 0:
+                
                 print(f'  Completed iter {i}/{n_iter}. Training loss: {loss:.2f}.')
 
         if verbose > 0:
@@ -205,6 +197,7 @@ class SingleLayerNet():
 
         return loss_history
 
+        
     def predict(self, features):
         ''' Predicts the int-coded class value for network inputs ('features').
 
