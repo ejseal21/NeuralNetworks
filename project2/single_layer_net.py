@@ -42,7 +42,14 @@ class SingleLayerNet():
         -----------
         float. accuracy in range [0, 1]
         '''
-        pass
+
+
+        arr, counts = np.unique(np.equal(np.expand_dims(y, 1), y_pred), return_counts=True) #calculate the unique values, and the number of times they occur
+
+        if arr[0]: #if the first unique value is True, then compute proportion correct
+            return counts[0]/y.size
+        else: #otherwise, compute 1-prportion mismatched
+            return 1-counts[0]/y.size
 
     def net_in(self, features):
         ''' Computes the net input (net weighted sum)
@@ -154,7 +161,7 @@ class SingleLayerNet():
 
         #initialize loss and acc stuff
         loss_history = []
-        
+        acc_history = []
         if verbose > 0:
             print(f'Starting to train network...There will be {n_epochs} epochs', end='')
             print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
@@ -167,21 +174,19 @@ class SingleLayerNet():
             cur_samps = features[random_indices]
             cur_labels = y[random_indices]
 
-            if mini_batch_sz == 1:
-                #not confident that the axis is correct
-                cur_samps = np.expand_dims(cur_samps, 0)
-                #not confident that I have to do it for cur_labels as well
-                cur_labels = np.expand_dims(cur_labels, 0)
-        
             #get one-hots for the classes of the samples we care about
             one_hot_labels = self.one_hot(cur_labels, num_classes) 
             cur_net_in = self.net_in(cur_samps)
-            cur_net_act = self.activation(cur_net_in)
+            cur_net_act = self.activation(cur_net_in)   
 
+            # print("cur_net_in.shape",cur_net_in.shape)
             #compute the loss
             loss = self.loss(cur_net_in, cur_labels, reg)
             loss_history.append(loss)
  
+            pred = self.predict(cur_samps)
+            # acc = self.accuracy(cur_labels, pred)
+            # acc_history.append(acc)
             #compute the gradient and update weights
             grad_wts, grad_b = self.gradient(cur_samps, cur_net_act, one_hot_labels, reg)         
             self.wts = self.wts - lr * grad_wts
@@ -195,7 +200,7 @@ class SingleLayerNet():
         if verbose > 0:
             print('Finished training!')
 
-        return loss_history
+        return loss_history #, acc_history
 
         
     def predict(self, features):
@@ -212,7 +217,10 @@ class SingleLayerNet():
             Note: You can figure out the predicted class assignments from net_in (i.e. you dont
             need to apply the net activation function — it will not affect the most active neuron).
         '''
-        pass
+        activations = self.activation(self.net_in(features))
+        activations[activations < 0] = -1
+        activations[activations >= 0] = 1
+        return activations.astype(int)
 
     def test_loss(self):
         '''Override. Don't fill this in'''
