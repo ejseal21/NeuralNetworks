@@ -1,6 +1,6 @@
 '''mlp.py
 Constructs, trains, tests 3 layer multilayer layer perceptron networks
-YOUR NAMES HERE
+Ethan Seal and Cole Turner
 CS343: Neural Networks
 Project 2: Multilayer Perceptrons
 '''
@@ -70,6 +70,12 @@ class MLP():
         '''
         # keep the random seed for debugging/test code purposes
         np.random.seed(0)
+
+        #initialize weights
+        self.y_wts = np.random.normal(0, std, (M, H))
+        self.y_b = np.random.normal(0, std, (H,))
+        self.z_wts = np.random.normal(0, std, (H, C))
+        self.z_b = np.random.normal(0, std, (C,))
         pass
 
     def accuracy(self, y, y_pred):
@@ -116,6 +122,8 @@ class MLP():
             Note: You can figure out the predicted class assignments without applying the
             softmax net activation function — it will not affect the most active neuron.
         '''
+
+        
         pass
 
     def forward(self, features, y, reg=0):
@@ -191,11 +199,11 @@ class MLP():
         - Regularize each layer's weights like usual.
         '''
         # gradient of loss
-        dloss_dnet_act = -1/(len(z_net_act) * z_net_act)
+        dz_net_act = -1/(len(z_net_act) * z_net_act)
 
         # gradient of output layer activations
         y_one_hot = self.one_hot(y, self.num_output_units)
-        dz_net_act = dloss_dnet_act * z_net_act * (y_one_hot - z_net_act)
+        dz_net_in = dz_net_act * z_net_act * (y_one_hot - z_net_act)
 
         # TODO: Fill in gradients here
 
@@ -258,8 +266,8 @@ class MLP():
         print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
 
             # NOTE: This print statement should go in your training loop
-            if i % 100 == 0 and verbose > 0:
-                print(f'  Completed iter {i}/{n_iter}. Training loss: {loss_history[-1]:.2f}.')
+            # if i % 100 == 0 and verbose > 0:
+            #     print(f'  Completed iter {i}/{n_iter}. Training loss: {loss_history[-1]:.2f}.')
 
         if verbose > 0:
             print('Finished training!')
