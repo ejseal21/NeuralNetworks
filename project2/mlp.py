@@ -173,17 +173,11 @@ class MLP():
         y_net_in = features @ self.y_wts 
         y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
         
-        z_net_in = y_net_act @ self.z_wts
-        print(np.max(z_net_in))
-        z_net_in = z_net_in - np.max(z_net_in)
-        print(z_net_in)
-        # z_net_act = (1/(1+np.exp(-z_net_in)) )
+        z_net_in = y_net_act @ self.z_wts + self.z_b
+        z_net_in_other = z_net_in - np.max(z_net_in, keepdims=True)
 
-        z_net_act = 1/(1+np.exp(-z_net_in ))
+        z_net_act =np.exp(z_net_in_other)/np.sum(np.exp(z_net_in_other), axis=1, keepdims=True)
 
-        # z_net_act = z_net_act - np.max(z_net_act)
-
-    
         loss = None
         
 
