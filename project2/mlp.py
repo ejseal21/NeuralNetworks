@@ -176,9 +176,10 @@ class MLP():
         z_net_in = y_net_act @ self.z_wts + self.z_b
         z_net_in_other = z_net_in - np.max(z_net_in, keepdims=True)
 
-        z_net_act =np.exp(z_net_in_other)/np.sum(np.exp(z_net_in_other), axis=1, keepdims=True)
+        z_net_act = np.exp(z_net_in_other)/np.sum(np.exp(z_net_in_other), axis=1, keepdims=True)
 
-        loss = None
+        correctActs = z_net_act[np.arange(z_net_act.shape[0]), y]
+        loss = -np.mean(np.log(correctActs), axis=0) + reg*(0.5 * (np.sum(np.square(self.z_wts)) + np.sum(np.square(self.y_wts))))
         
 
 
