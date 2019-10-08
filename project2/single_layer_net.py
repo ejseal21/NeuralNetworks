@@ -43,13 +43,28 @@ class SingleLayerNet():
         float. accuracy in range [0, 1]
         '''
 
-
-        arr, counts = np.unique(np.equal(np.expand_dims(y, 1), y_pred), return_counts=True) #calculate the unique values, and the number of times they occur
-
-        if arr[0]: #if the first unique value is True, then compute proportion correct
-            return counts[0]/y.size
-        else: #otherwise, compute 1-prportion mismatched
-            return 1-counts[0]/y.size
+        #this is a steaming pile of garbage
+        # f = y.copy()
+        # f_pred = y_pred.copy()
+        # f = np.expand_dims(y, 1)
+        # # np.expand_dims()
+        # a = f[f_pred == 1]
+        # b = a[a == 1]
+        # return np.sum(b) / y.shape[0]
+        # right_and_wrong = np.where(y == y_pred, 1, 0)        
+        # print("rw",right_and_wrong)
+        y_copy = y.copy()
+        y_copy = np.expand_dims(y_copy, 1)
+        print("sum:", sum(y_copy * y_pred))
+        print("y.size", y.size)
+        return sum(y_copy * y_pred) / y_pred.size
+        # return (1.0 * np.sum(right_and_wrong))/len(right_and_wrong)
+        # arr, counts = np.unique(np.equal(np.expand_dims(y, 1), y_pred), return_counts=True) #calculate the unique values, and the number of times they occur
+        
+        # if arr[0]: #if the first unique value is True, then compute proportion correct
+        #     return counts[0]/y.size
+        # else: #otherwise, compute 1-prportion mismatched
+        #     return 1-counts[0]/y.size
 
     def net_in(self, features):
         ''' Computes the net input (net weighted sum)
@@ -286,9 +301,9 @@ class SingleLayerNetSoftmax(SingleLayerNet):
 
         net_act = self.activation(net_in)
        
-        correctActs = net_act[np.arange(net_act.shape[0]), y]
+        correct_acts = net_act[np.arange(net_act.shape[0]), y]
 
-        loss = -np.mean(np.log(correctActs), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
+        loss = -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
         return loss
 
     def gradient(self, features, net_act, y, reg=0):

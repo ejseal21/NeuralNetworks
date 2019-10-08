@@ -170,27 +170,28 @@ class MLP():
           from each set of weights (i.e. 2 in this case).
         '''
 
-        y_net_in = features @ self.y_wts 
+        y_net_in = features @ self.y_wts + self.y_b
         y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
         
         z_net_in = y_net_act @ self.z_wts + self.z_b
         z_net_in_other = z_net_in - np.max(z_net_in, keepdims=True)
 
         z_net_act = np.exp(z_net_in_other)/np.sum(np.exp(z_net_in_other), axis=1, keepdims=True)
-
-        correctActs = z_net_act[np.arange(z_net_act.shape[0]), y]
-        loss = -np.mean(np.log(correctActs), axis=0) + reg*(0.5 * (np.sum(np.square(self.z_wts)) + np.sum(np.square(self.y_wts))))
+        loss = self.compute_loss(z_net_act, y, reg)
         
-
-
         return y_net_in, y_net_act, z_net_in, z_net_act, loss
+
+    def compute_loss(self, z_net_act, y, reg):
+        correct_acts = z_net_act[np.arange(z_net_act.shape[0]), y]
+        return -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * 
+                (np.sum(np.square(self.z_wts)) + np.sum(np.square(self.y_wts))))
 
     def backward(self, features, y, y_net_in, y_net_act, z_net_in, z_net_act, reg=0):
         '''
         Performs a backward pass (output -> hidden -> input) during training to update the
-        weights. This function implements the backpropogation algorithm.
+        weights. This function implements the backpropagation algorithm.
 
-        This should start with the loss and progate the activity
+        This should start with the loss and propagate the activity
         backwards through the net to the input-hidden weights.
 
         I added the first few gradients, assuming dz_net_act is your softmax
@@ -199,7 +200,7 @@ class MLP():
         I suggest numbering your forward flow equations and process each for
         relevant gradients in reverse order until you hit the first set of weights.
 
-        Don't forget to backpropogate the regularization to the weights!
+        Don't forget to backpropagate the regularization to the weights!
         (I suggest worrying about this last)
 
         Parameters:
@@ -221,6 +222,9 @@ class MLP():
         NOTE:
         - Regularize each layer's weights like usual.
         '''
+        loss = self.compute_loss(z_net_act, y, reg)
+
+
         # gradient of loss
         dz_net_act = -1/(len(z_net_act) * z_net_act)
 
@@ -229,6 +233,18 @@ class MLP():
         dz_net_in = dz_net_act * z_net_act * (y_one_hot - z_net_act)
 
         # TODO: Fill in gradients here
+
+        dz_wts = (dz_net_in.T @ y_net_act).T + (reg * self.z_wts) #shape should be HxC: (NxC.T @ NxH).T
+
+        dz_b = np.sum(dz_net_in, axis=0) #shape of dz_b should be C,
+        
+        dy_net_act = dz_net_in @ self.z_wts.T #shape of dy_net_act should be NxH
+
+        dy_net_in = dy_net_act * np.where(y_net_act < 0, 0, 1) #shape of dy_net_in should be NxH
+
+        dy_wts = (dy_net_in.T @ features).T + (reg * self.y_wts) #shape of dy_wts should be MxH
+
+        dy_b = np.sum(dy_net_in, axis=0) #shape of dy_b should be H,
 
         return dy_wts, dy_b, dz_wts, dz_b
 
@@ -287,10 +303,37 @@ class MLP():
 
         print(f'Starting to train network...There will be {n_epochs} epochs', end='')
         print(f' and {n_iter} iterations total, {iter_per_epoch} iter/epoch.')
+        
+        for i in range(n_iter):
+            #generate random indices with replacement for cur_samps and cur_labels
+            #indices are guaranteed to match for samps and labels
+            random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
+            cur_samps = features[random_indices]
+            cur_labels = y[random_indices]
 
-            # NOTE: This print statement should go in your training loop
-            # if i % 100 == 0 and verbose > 0:
-            #     print(f'  Completed iter {i}/{n_iter}. Training loss: {loss_history[-1]:.2f}.')
+            #get one-hots for the classes of the samples we care about
+            one_hot_labels = self.one_hot(cur_labels, num_classes)
+
+            #grab all the outputs from the forward pass
+            y_net_in, y_net_act, z_net_in, z_net_act, loss = self.forward(cur_samps, cur_labels, reg)
+
+            loss_history.append(loss)
+
+            pred = self.predict(cur_samps)
+
+            dy_wts, dy_b, dz_wts, dz_b = self.backward(cur_samps, cur_labels, y_net_in, y_net_act, z_net_in, z_net_act, reg)
+
+            #update weights and biases
+            self.y_wts = self.y_wts - lr * dy_wts
+            self.y_b = self.y_b - lr * dy_b
+            self.z_wts = self.z_wts - lr * dz_wts
+            self.z_b = self.z_b - lr * dz_b
+
+
+            if i % 100 == 0 and verbose > 0:
+                print(f'  Completed iter {i}/{n_iter}. Training loss: {loss_history[-1]:.2f}.')
+
+
 
         if verbose > 0:
             print('Finished training!')
