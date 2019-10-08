@@ -106,7 +106,11 @@ class MLP():
             e.g. if y = [0, 2, 1] and num_classes = 4 we have:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0]]
         '''
-        pass
+
+        one_hot_out = np.zeros((len(y), num_classes))
+        one_hot_out[np.arange(len(y)), y] = 1
+
+        return one_hot_out.astype(int) 
 
     def predict(self, features):
         ''' Predicts the int-coded class value for network inputs ('features').
@@ -123,8 +127,13 @@ class MLP():
             softmax net activation function — it will not affect the most active neuron.
         '''
 
+        y_net_in = features @ self.y_wts 
+        y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
         
-        pass
+        z_net_in = y_net_act @ self.z_wts + self.z_b
+        prediction = np.argmax(z_net_in, axis=1)
+        
+        return prediction
 
     def forward(self, features, y, reg=0):
         '''
@@ -160,6 +169,25 @@ class MLP():
         - To regularize loss for multiple layers, you add the usual regularization to the loss
           from each set of weights (i.e. 2 in this case).
         '''
+
+        y_net_in = features @ self.y_wts 
+        y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
+        
+        z_net_in = y_net_act @ self.z_wts
+        print(np.max(z_net_in))
+        z_net_in = z_net_in - np.max(z_net_in)
+        print(z_net_in)
+        # z_net_act = (1/(1+np.exp(-z_net_in)) )
+
+        z_net_act = 1/(1+np.exp(-z_net_in ))
+
+        # z_net_act = z_net_act - np.max(z_net_act)
+
+    
+        loss = None
+        
+
+
         return y_net_in, y_net_act, z_net_in, z_net_act, loss
 
     def backward(self, features, y, y_net_in, y_net_act, z_net_in, z_net_act, reg=0):
