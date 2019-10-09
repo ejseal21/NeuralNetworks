@@ -90,7 +90,10 @@ class MLP():
         -----------
         float. accuracy in range [0, 1]
         '''
-        pass
+        
+        diff = y-y_pred # 0 when predicted correctly, [-9, 9] otherwise
+        correct = np.where(diff != 0, 0, 1) #1 when correct, 0 otherwise
+        return np.sum(correct) / y.size
 
     def one_hot(self, y, num_classes):
         '''One-hot codes the output classes for a mini-batch
@@ -232,8 +235,6 @@ class MLP():
         y_one_hot = self.one_hot(y, self.num_output_units)
         dz_net_in = dz_net_act * z_net_act * (y_one_hot - z_net_act)
 
-        # TODO: Fill in gradients here
-
         dz_wts = (dz_net_in.T @ y_net_act).T + (reg * self.z_wts) #shape should be HxC: (NxC.T @ NxH).T
 
         dz_b = np.sum(dz_net_in, axis=0) #shape of dz_b should be C,
@@ -311,9 +312,6 @@ class MLP():
             cur_samps = features[random_indices]
             cur_labels = y[random_indices]
 
-            #get one-hots for the classes of the samples we care about
-            one_hot_labels = self.one_hot(cur_labels, num_classes)
-
             #grab all the outputs from the forward pass
             y_net_in, y_net_act, z_net_in, z_net_act, loss = self.forward(cur_samps, cur_labels, reg)
 
@@ -333,7 +331,14 @@ class MLP():
             if i % 100 == 0 and verbose > 0:
                 print(f'  Completed iter {i}/{n_iter}. Training loss: {loss_history[-1]:.2f}.')
 
+            if i % iter_per_epoch == 0:
+                y_pred_val = self.predict(x_validation)
+                val_acc = self.accuracy(y_validation, y_pred_val)
+                validation_acc_history.append(val_acc)
 
+                y_pred_train = self.predict(features)
+                train_acc = self.accuracy(y, y_pred_train)
+                train_acc_history.append(train_acc)
 
         if verbose > 0:
             print('Finished training!')

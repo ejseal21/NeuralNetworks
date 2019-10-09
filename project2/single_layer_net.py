@@ -175,14 +175,12 @@ class SingleLayerNet():
             cur_net_in = self.net_in(cur_samps)
             cur_net_act = self.activation(cur_net_in)   
 
-            # print("cur_net_in.shape",cur_net_in.shape)
             #compute the loss
             loss = self.loss(cur_net_in, cur_labels, reg)
             loss_history.append(loss)
  
             pred = self.predict(cur_samps)
-            # acc = self.accuracy(cur_labels, pred)
-            # acc_history.append(acc)
+
             #compute the gradient and update weights
             grad_wts, grad_b = self.gradient(cur_samps, cur_net_act, one_hot_labels, reg)         
             self.wts = self.wts - lr * grad_wts
@@ -196,7 +194,7 @@ class SingleLayerNet():
         if verbose > 0:
             print('Finished training!')
 
-        return loss_history #, acc_history
+        return loss_history
 
         
     def predict(self, features):
