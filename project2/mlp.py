@@ -131,7 +131,7 @@ class MLP():
         '''
 
         y_net_in = features @ self.y_wts 
-        y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
+        y_net_act = y_net_in * np.where(y_net_in <= 0, 0, 1)
         
         z_net_in = y_net_act @ self.z_wts + self.z_b
         prediction = np.argmax(z_net_in, axis=1)
@@ -174,10 +174,10 @@ class MLP():
         '''
 
         y_net_in = features @ self.y_wts + self.y_b
-        y_net_act = np.where(y_net_in < 0, 0, y_net_in) 
+        y_net_act = y_net_in * np.where(y_net_in <= 0, 0, 1)
         
         z_net_in = y_net_act @ self.z_wts + self.z_b
-        z_net_in_other = z_net_in - np.max(z_net_in, keepdims=True)
+        z_net_in_other = z_net_in - np.max(z_net_in, keepdims=True, axis=1)
 
         z_net_act = np.exp(z_net_in_other)/np.sum(np.exp(z_net_in_other), axis=1, keepdims=True)
         loss = self.compute_loss(z_net_act, y, reg)
@@ -189,7 +189,7 @@ class MLP():
 
         '''
         correct_acts = z_net_act[np.arange(z_net_act.shape[0]), y]
-        return -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * 
+        return -np.mean(np.log(correct_acts)) + reg*(0.5 * 
                 (np.sum(np.square(self.z_wts)) + np.sum(np.square(self.y_wts))))
 
     def backward(self, features, y, y_net_in, y_net_act, z_net_in, z_net_act, reg=0):
@@ -318,7 +318,7 @@ class MLP():
 
             loss_history.append(loss)
 
-            pred = self.predict(cur_samps)
+            # pred = self.predict(cur_samps)
 
             dy_wts, dy_b, dz_wts, dz_b = self.backward(cur_samps, cur_labels, y_net_in, y_net_act, z_net_in, z_net_act, reg)
 
