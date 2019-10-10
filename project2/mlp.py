@@ -185,6 +185,9 @@ class MLP():
         return y_net_in, y_net_act, z_net_in, z_net_act, loss
 
     def compute_loss(self, z_net_act, y, reg):
+        '''
+
+        '''
         correct_acts = z_net_act[np.arange(z_net_act.shape[0]), y]
         return -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * 
                 (np.sum(np.square(self.z_wts)) + np.sum(np.square(self.y_wts))))
@@ -225,8 +228,6 @@ class MLP():
         NOTE:
         - Regularize each layer's weights like usual.
         '''
-        loss = self.compute_loss(z_net_act, y, reg)
-
 
         # gradient of loss
         dz_net_act = -1/(len(z_net_act) * z_net_act)
@@ -241,7 +242,7 @@ class MLP():
         
         dy_net_act = dz_net_in @ self.z_wts.T #shape of dy_net_act should be NxH
 
-        dy_net_in = dy_net_act * np.where(y_net_act < 0, 0, 1) #shape of dy_net_in should be NxH
+        dy_net_in = dy_net_act * np.where(y_net_act <= 0, 0, 1) #shape of dy_net_in should be NxH
 
         dy_wts = (dy_net_in.T @ features).T + (reg * self.y_wts) #shape of dy_wts should be MxH
 
@@ -322,10 +323,10 @@ class MLP():
             dy_wts, dy_b, dz_wts, dz_b = self.backward(cur_samps, cur_labels, y_net_in, y_net_act, z_net_in, z_net_act, reg)
 
             #update weights and biases
-            self.y_wts = self.y_wts - lr * dy_wts
-            self.y_b = self.y_b - lr * dy_b
-            self.z_wts = self.z_wts - lr * dz_wts
-            self.z_b = self.z_b - lr * dz_b
+            self.y_wts = self.y_wts - (lr * dy_wts)
+            self.y_b = self.y_b - (lr * dy_b)
+            self.z_wts = self.z_wts - (lr * dz_wts)
+            self.z_b = self.z_b - (lr * dz_b)
 
 
             if i % 100 == 0 and verbose > 0:
