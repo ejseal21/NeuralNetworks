@@ -6,6 +6,7 @@ CS343: Neural Networks
 Project 3: Convolutional neural networks
 '''
 import numpy as np
+import math 
 
 
 def conv2_gray(img, kers, verbose=True):
@@ -38,7 +39,36 @@ def conv2_gray(img, kers, verbose=True):
     img_y, img_x = img.shape
     n_kers, ker_x, ker_y = kers.shape
 
-    pass
+    padding_amount = math.ceil((ker_x - 1)/2)
+
+    img_pad = np.pad(img, padding_amount, 'constant', constant_values=0)
+
+    kers_flipped = []
+
+    img_out = np.zeros_like(img, dtype=float)
+    print(img_out)
+
+    for ker in kers:
+        kers_flipped.append(np.flip(ker))
+
+    for ker in kers_flipped:
+        for i in range(img_x):
+            for j in range(img_y):
+
+                # print("x: %i, y: %i" % (i,j))
+                window = ker*img_pad[i:i+ker_x,j:j+ker_y]
+                # print(np.sum(window))
+                img_out[i,j] = np.sum(window)
+                
+                # print(conv_img)
+
+
+    print(img_out)
+        
+    
+
+
+    return img_out
 
 
 def conv2(img, kers, verbose=True):
