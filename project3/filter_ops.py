@@ -38,14 +38,15 @@ def conv2_gray(img, kers, verbose=True):
     '''
     img_y, img_x = img.shape
     n_kers, ker_x, ker_y = kers.shape
-
+    
     #calculate the padding amount
     padding_amount = math.ceil((ker_x - 1)/2)
 
     #pad the image
     img_pad = np.pad(img, padding_amount, 'constant', constant_values=0)
-
-
+    
+    #expand dims for channels
+    
     kers_flipped = []
 
     #generate output array
@@ -59,17 +60,22 @@ def conv2_gray(img, kers, verbose=True):
     for ker in kers_flipped:
         #cross x axis
         for i in range(img_x):
+            # print("i:",i)
+
             #cross y axis
             for j in range(img_y):
-
+                # print("j:",j)
                 #take the multiplcation window
-                window = ker*img_pad[i:i+ker_x,j:j+ker_y]
+                # print("ker:",ker)
+                # print("pad:",img_pad[i:i+ker_x,j:j+ker_y])
+                window = ker * img_pad[j:j+ker_y, i:i+ker_x]
+                # window = ker*img_pad[i:i+ker_x,j:j+ker_y]
                 #calculate the sum of the window and assign to image out location
-                img_out[i,j] = np.sum(window)
+                img_out[j,i] = np.sum(window)
                 
 
-
-    print(img_out)
+    if verbose:
+        print(img_out)
         
     
 
