@@ -74,7 +74,7 @@ def conv2_gray(img, kers, verbose=True):
     
 
 
-    return img_out
+    return np.expand_dims(img_out, axis=0)
 
 
 def conv2(img, kers, verbose=True):
