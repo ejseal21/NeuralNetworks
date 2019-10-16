@@ -50,37 +50,32 @@ def conv2_gray(img, kers, verbose=True):
     kers_flipped = []
 
     #generate output array
-    img_out = np.zeros_like(img, dtype=float)
+    img_out = np.zeros((n_kers, img.shape[0], img.shape[1]), dtype=float)
 
     #flip all kernels
     for ker in kers:
         kers_flipped.append(np.flip(ker))
 
     #multiply the kernel across each window
-    for ker in kers_flipped:
+    for k in range(len(kers_flipped)):
         #cross x axis
         for i in range(img_x):
             # print("i:",i)
 
             #cross y axis
             for j in range(img_y):
-                # print("j:",j)
                 #take the multiplcation window
-                # print("ker:",ker)
-                # print("pad:",img_pad[i:i+ker_x,j:j+ker_y])
-                window = ker * img_pad[j:j+ker_y, i:i+ker_x]
-                # window = ker*img_pad[i:i+ker_x,j:j+ker_y]
+                window = kers[k] * img_pad[j:j+ker_y, i:i+ker_x]
                 #calculate the sum of the window and assign to image out location
-                img_out[j,i] = np.sum(window)
+                img_out[k, j, i] = np.sum(window)
                 
-
     if verbose:
         print(img_out)
         
     
 
-
-    return np.expand_dims(img_out, axis=0)
+    return img_out
+    # return np.expand_dims(img_out, axis=0)
 
 
 def conv2(img, kers, verbose=True):
