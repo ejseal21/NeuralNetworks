@@ -68,14 +68,13 @@ def conv2_gray(img, kers, verbose=True):
                 window = kers[k] * img_pad[j:j+ker_y, i:i+ker_x]
                 #calculate the sum of the window and assign to image out location
                 img_out[k, j, i] = np.sum(window)
-                
+
     if verbose:
         print(img_out)
         
     
 
     return img_out
-    # return np.expand_dims(img_out, axis=0)
 
 
 def conv2(img, kers, verbose=True):
@@ -106,9 +105,45 @@ def conv2(img, kers, verbose=True):
     be aware of which axes you are summing over. If you use keepdims=True, you may want to remove
     singleton dimensions.
     '''
-    n_chans, img_y, img_x = img.shape
+    img_y, img_x = img.shape
     n_kers, ker_x, ker_y = kers.shape
+    
+    #calculate the padding amount
+    padding_amount = math.ceil((ker_x - 1)/2)
 
+    #pad the image
+    img_pad = np.pad(img, padding_amount, 'constant', constant_values=0)
+    
+    #expand dims for channels
+    
+    kers_flipped = []
+
+    #generate output array
+    img_out = np.zeros((n_kers, img.shape[0], img.shape[1]), dtype=float)
+
+    #flip all kernels
+    for ker in kers:
+        kers_flipped.append(np.flip(ker))
+
+    #multiply the kernel across each window
+    for k in range(len(kers_flipped)):
+        #cross x axis
+        for i in range(img_x):
+            # print("i:",i)
+
+            #cross y axis
+            for j in range(img_y):
+                #take the multiplcation window
+                window = kers[k] * img_pad[j:j+ker_y, i:i+ker_x]
+                #calculate the sum of the window and assign to image out location
+                img_out[k, j, i] = np.sum(window)
+                
+    if verbose:
+        print(img_out)
+        
+    
+
+    return img_out
     pass
 
 
