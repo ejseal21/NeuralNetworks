@@ -134,21 +134,28 @@ def conv2(img, kers, verbose=True):
 
     #multiply the kernel across each window
 
-
+    count = 0
     for k in range(len(kers_flipped)):
         #cross x axis
-        for i in range(img_x):
-            # print("i:",i)
+        for channel in range(n_chans):
+            for i in range(img_y):
+                # print("i:",i)
 
-            #cross y axis
-            for j in range(img_y):
-                #take the multiplcation window
-                # print(img_pad[:, i:i+ker_x, j:j+ker_y].shape)
-                print("i:", i+ker_x)
-                print("j:", j+ker_y)
-                window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
-                #calculate the sum of the window and assign to image out location
-                img_out[k, :, i, j] = np.sum(window)
+                #cross y axis
+                for j in range(img_x):
+                    #take the multiplcation window
+                    # print(img_pad[:, i:i+ker_x, j:   j+ker_y].shape)
+                    # print("i:", i+ker_x)
+                    # print(img_pad.shape)
+                    # print("j:", j+ker_y)
+                    window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
+                    count +=1
+                    # print(window.shape)
+                    #calculate the sum of the window and assign to image out location
+                    img_out[k, channel, j, i] = np.sum(window)
+    img_out = np.transpose(img_out,(0,1,3,2))
+
+    
 
     if verbose:
         print(img_out)
