@@ -116,7 +116,8 @@ def conv2(img, kers, verbose=True):
     # img_pad = np.pad(img, ((0, 0), (padding_amount, padding_amount), (padding_amount, padding_amount)), 'constant', constant_values=(0,0,0))
 
     img_pad = np.zeros((n_chans, img_y+(padding_amount*2),img_x+(padding_amount*2)))
-
+    print('pad shape:', img_pad.shape)
+    print('img shape:', img.shape)
     for channel in range(n_chans):
         img_pad[channel] = np.pad(img[channel], padding_amount, 'constant', constant_values=0)
     
@@ -128,7 +129,7 @@ def conv2(img, kers, verbose=True):
     #generate output array
 
     img_out = np.zeros((n_kers, n_chans, img_x, img_y), dtype=float)
-
+    print(img_out.shape)
     #flip all kernels
     for ker in kers:
         kers_flipped.append(np.flip(ker))
@@ -139,7 +140,7 @@ def conv2(img, kers, verbose=True):
     for k in range(len(kers_flipped)):
         #cross x axis
         for i in range(img_x):
-            # print("i:",i)
+            print("column i:",i)
 
             #cross y axis
             for j in range(img_y):
