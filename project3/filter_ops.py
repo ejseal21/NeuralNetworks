@@ -120,6 +120,7 @@ def conv2(img, kers, verbose=True):
     for channel in range(n_chans):
         img_pad[channel] = np.pad(img[channel], padding_amount, 'constant', constant_values=0)
     
+    print("img_pad:",img_pad[0,:, 5])
     #expand dims for channels
     
     kers_flipped = []
@@ -144,8 +145,8 @@ def conv2(img, kers, verbose=True):
             for j in range(img_y):
                 #take the multiplcation window
                 # print(img_pad[:, i:i+ker_x, j:j+ker_y].shape)
-                print("i:", i+ker_x)
-                print("j:", j+ker_y)
+                # print("i:", i+ker_x)
+                # print("j:", j+ker_y)
                 window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
                 #calculate the sum of the window and assign to image out location
                 img_out[k, :, i, j] = np.sum(window)
