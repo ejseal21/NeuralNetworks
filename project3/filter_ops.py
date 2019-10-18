@@ -61,20 +61,12 @@ def conv2_gray(img, kers, verbose=True):
     for k in range(len(kers_flipped)):
         #cross x axis
         for i in range(img_x):
-            # print("i:",i)
-
             #cross y axis
             for j in range(img_y):
                 #take the multiplcation window
-                window = kers[k] * img_pad[i:i+ker_x, j:j+ker_y]
+                window = kers_flipped[k] * img_pad[i:i+ker_x, j:j+ker_y]
                 #calculate the sum of the window and assign to image out location
                 img_out[k, i, j] = np.sum(window)
-
-    if verbose:
-        print(img_out)
-        
-    
-
     return img_out
 
 
@@ -113,64 +105,28 @@ def conv2(img, kers, verbose=True):
     padding_amount = math.ceil((ker_x - 1)/2)
 
     #pad the image
-    # img_pad = np.pad(img, ((0, 0), (padding_amount, padding_amount), (padding_amount, padding_amount)), 'constant', constant_values=(0,0,0))
-
     img_pad = np.zeros((n_chans, img_y+(padding_amount*2),img_x+(padding_amount*2)))
-    print('pad shape:', img_pad.shape)
-    print('img shape:', img.shape)
     for channel in range(n_chans):
         img_pad[channel] = np.pad(img[channel], padding_amount, 'constant', constant_values=0)
     
-    print("img_pad:",img_pad[0,:, 5])
     #expand dims for channels
     
     kers_flipped = []
-
+    for ker in kers:
+        kers_flipped.append(np.flip(ker))
     #generate output array
 
     img_out = np.zeros((n_kers, n_chans, img_x, img_y), dtype=float)
-    print(img_out.shape)
     #flip all kernels
-    for ker in kers:
-        kers_flipped.append(np.flip(ker))
-
-    #multiply the kernel across each window
-    count = 0
-    for k in range(len(kers_flipped)):
-        #cross x axis
-        for channel in range(n_chans):
-            for i in range(img_y):
-                # print("i:",i)
-
-                #cross y axis
-                for j in range(img_x):
-                    #take the multiplcation window
-                    # print(img_pad[:, i:i+ker_x, j:   j+ker_y].shape)
-                    # print("i:", i+ker_x)
-                    # print(img_pad.shape)
-                    # print("j:", j+ker_y)
-                    window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
-                    count +=1
-                    print("window shape",window.shape)
-                    #calculate the sum of the window and assign to image out location
-                    a = np.sum(window, axis=1, keepdims=True)
-                    b = np.sum(window, axis=2, keepdims=True)
-                    print("a:",a)
-                    print("b:",b)
-                    img_out[k, channel, j, i] = b#np.sum(window)
-
-    img_out = np.transpose(img_out,(0,1,3,2))
-
-    
-
-    if verbose:
-        print(img_out)
-        
-    
-
+    for k in range(n_kers):
+        for i in range(img_y):
+            #cross y axis
+            for j in range(img_x):
+                #take the multiplcation window
+                window = kers_flipped[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
+                #put the correct pixel value in the pixel
+                img_out[k,:, j, i] = np.sum(window, axis=(1,2))
     return img_out
-
-
 
 def conv2nn(imgs, kers, bias, verbose=True):
     '''General 2D convolution operation suitable for a convolutional layer of a neural network.
