@@ -135,22 +135,33 @@ def conv2(img, kers, verbose=True):
         kers_flipped.append(np.flip(ker))
 
     #multiply the kernel across each window
-
-
+    count = 0
     for k in range(len(kers_flipped)):
         #cross x axis
-        for i in range(img_x):
-            print("column i:",i)
+        for channel in range(n_chans):
+            for i in range(img_y):
+                # print("i:",i)
 
-            #cross y axis
-            for j in range(img_y):
-                #take the multiplcation window
-                # print(img_pad[:, i:i+ker_x, j:j+ker_y].shape)
-                # print("i:", i+ker_x)
-                # print("j:", j+ker_y)
-                window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
-                #calculate the sum of the window and assign to image out location
-                img_out[k, :, i, j] = np.sum(window)
+                #cross y axis
+                for j in range(img_x):
+                    #take the multiplcation window
+                    # print(img_pad[:, i:i+ker_x, j:   j+ker_y].shape)
+                    # print("i:", i+ker_x)
+                    # print(img_pad.shape)
+                    # print("j:", j+ker_y)
+                    window = kers[k] * img_pad[:, i:i+ker_x, j:j+ker_y]
+                    count +=1
+                    print("window shape",window.shape)
+                    #calculate the sum of the window and assign to image out location
+                    a = np.sum(window, axis=1, keepdims=True)
+                    b = np.sum(window, axis=2, keepdims=True)
+                    print("a:",a)
+                    print("b:",b)
+                    img_out[k, channel, j, i] = b#np.sum(window)
+
+    img_out = np.transpose(img_out,(0,1,3,2))
+
+    
 
     if verbose:
         print(img_out)
@@ -215,7 +226,9 @@ def get_pooling_out_shape(img_dim, pool_size, strides):
     int. The size in pixels of the output of the image after max pooling is applied, in the dimension
         img_dim.
     '''
-    pass
+    #floor of (x-p)/s + 1
+    #cast to int should take care of floor
+    return int((img_dim - pool_size)/strides) + 1
 
 
 def max_pool(inputs, pool_size=2, strides=1, verbose=True):
@@ -250,9 +263,19 @@ def max_pool(inputs, pool_size=2, strides=1, verbose=True):
     # Compute the output shape
     out_x = get_pooling_out_shape(img_x, pool_size, strides)
     out_y = get_pooling_out_shape(img_y, pool_size, strides)
+    
+    
+    out = np.zeros((out_y, out_x))
 
-    pass
+    if verbose:
+        print("Your output shape is", out.shape)
 
+        
+    for i in range(out_x):
+        for j in range(out_y):
+            window = inputs[j*strides:j*strides + pool_size, i*strides:i*strides+pool_size] #window is a region that will produce a single value in out
+            out[j,i] = np.max(window)
+    return out
 
 def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
     ''' Max pooling implementation for a MaxPooling2D layer of a neural network
