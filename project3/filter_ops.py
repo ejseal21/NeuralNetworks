@@ -176,29 +176,28 @@ def conv2nn(imgs, kers, bias, verbose=True):
 
     #flip all kernels
     bias = np.expand_dims(np.expand_dims(np.expand_dims(bias, 1), 2), 3)
-    print("bias is",bias)
     imgs_out = np.ndarray((batch_sz, n_kers, img_y, img_x))
     for img in range(batch_sz):
         #pad the image
         padded_batch.append(np.zeros(
                 (n_chans, img_y+(padding_amount*2), img_x+(padding_amount*2))))
         
+        for channel in range(n_chans):
+            padded_batch[img][channel] = np.pad(imgs[img][channel], padding_amount, 'constant', constant_values=0)
+        
         img_out = np.zeros((n_kers, n_chans, img_x, img_y), dtype=float)
         
         for k in range(n_kers):
-            print("k",k)
             for i in range(img_y):
-                print("i:", i)
                 for j in range(img_x):
                     #take the multiplcation window
                     window = kers_flipped[k] * padded_batch[img][:, i:i+ker_x, j:j+ker_y]
+                    
                     #put the correct pixel value in the pixel
                     img_out[k, :, j, i] = np.sum(window, axis=(1, 2))
                     
-                    # print("img_out shape:",img_out.shape)
-            img_out = img_out + bias
+        img_out = img_out + bias #bias
         imgs_out[img] = np.transpose(np.squeeze(np.sum(img_out, axis=1)), (0, 2, 1))
-
     return imgs_out
 
 def get_pooling_out_shape(img_dim, pool_size, strides):
@@ -298,5 +297,16 @@ def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
     # Compute the output shape
     out_x = get_pooling_out_shape(img_x, pool_size, strides)
     out_y = get_pooling_out_shape(img_y, pool_size, strides)
-
-    pass
+    
+    out = np.zeros(inputs.shape)
+    all_out = []
+    if verbose:
+        print("Your output shape is", out.shape)
+    for samp in range(mini_batch_sz):
+        for c in range(n_chans):
+            for i in range(out_x):
+                for j in range(out_y):
+                    window = inputs[samp, c, j*strides:j*strides + pool_size, i*strides:i*strides+pool_size] #window is a region that will produce a single value in out
+                    out[samp, c,j,i] = np.max(window)
+        # all_out.append(out)
+    return out
