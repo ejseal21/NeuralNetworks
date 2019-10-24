@@ -101,6 +101,7 @@ def conv2(img, kers, verbose=True):
     n_chans, img_y, img_x = img.shape
     n_kers, ker_y, ker_x = kers.shape
     
+
     #calculate the padding amount
     padding_amount = math.ceil((ker_x - 1)/2)
 
@@ -108,8 +109,6 @@ def conv2(img, kers, verbose=True):
     img_pad = np.zeros((n_chans, img_y+(padding_amount*2),img_x+(padding_amount*2)))
     for channel in range(n_chans):
         img_pad[channel] = np.pad(img[channel], padding_amount, 'constant', constant_values=0)
-    
-    #expand dims for channels
     
     kers_flipped = []
     for ker in kers:
@@ -165,8 +164,42 @@ def conv2nn(imgs, kers, bias, verbose=True):
     batch_sz, n_chans, img_y, img_x = imgs.shape
     n_kers, n_ker_chans, ker_x, ker_y = kers.shape
 
-    pass
 
+    padded_batch = []
+    #calculate the padding amount
+    padding_amount = math.ceil((ker_x - 1)/2)
+
+    kers_flipped = []
+    for ker in kers:
+        kers_flipped.append(np.flip(ker))
+    #generate output array
+
+    #flip all kernels
+    bias = np.expand_dims(np.expand_dims(np.expand_dims(bias, 1), 2), 3)
+    print("bias is",bias)
+    imgs_out = np.ndarray((batch_sz, n_kers, img_y, img_x))
+    for img in range(batch_sz):
+        #pad the image
+        padded_batch.append(np.zeros(
+                (n_chans, img_y+(padding_amount*2), img_x+(padding_amount*2))))
+        
+        img_out = np.zeros((n_kers, n_chans, img_x, img_y), dtype=float)
+        
+        for k in range(n_kers):
+            print("k",k)
+            for i in range(img_y):
+                print("i:", i)
+                for j in range(img_x):
+                    #take the multiplcation window
+                    window = kers_flipped[k] * padded_batch[img][:, i:i+ker_x, j:j+ker_y]
+                    #put the correct pixel value in the pixel
+                    img_out[k, :, j, i] = np.sum(window, axis=(1, 2))
+                    
+                    # print("img_out shape:",img_out.shape)
+            img_out = img_out + bias
+        imgs_out[img] = np.transpose(np.squeeze(np.sum(img_out, axis=1)), (0, 2, 1))
+
+    return imgs_out
 
 def get_pooling_out_shape(img_dim, pool_size, strides):
     '''Computes the size of the output of a max pooling operation along one spatial dimension.
