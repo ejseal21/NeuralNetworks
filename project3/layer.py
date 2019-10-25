@@ -91,7 +91,7 @@ class Layer():
         -----------
         No return
         '''
-        pass
+        self.net_act = self.net_in
 
     def relu(self):
         '''Rectified linear activation function. f(x) is defined:
@@ -107,7 +107,7 @@ class Layer():
         -----------
         No return
         '''
-        pass
+        self.net_act = np.where(self.net_in > 0, self.net_in, 0)
 
     def softmax(self):
         '''Softmax activation function. See notebook for a refresher on the
@@ -124,9 +124,11 @@ class Layer():
         -----------
         No return
         '''
-        pass
+        net_in_max = np.max(self.net_in, keepdims=True)
+        self.net_act = np.exp(self.net_in - net_in_max) / np.sum(np.exp(self.net_in - net_in_max), axis=1, keepdims=True)
 
-    def loss(self, y):
+
+    def loss(self, y, reg=0):
         '''Computes the loss for this layer. Only should be called on the output
         layer. We assume here that the output layer will have a softmax activation
         function, so we need to compute the loss according to the cross entropy.
@@ -147,7 +149,7 @@ class Layer():
             # compute cross-entropy loss
             return self.cross_entropy(y)
 
-    def cross_entropy(self, y):
+    def cross_entropy(self, y, reg=0):
         '''Computes UNREGULARIZED cross-entropy loss.
         The network handles the regularization.
         See notebook for a refresher on the mathematical equation.
@@ -161,7 +163,13 @@ class Layer():
         -----------
         loss: float. Mean loss over the mini-batch.
         '''
-        pass
+        correct_acts = self.net_act[np.arange(self.net_act.shape[0]), y]
+        return -(1/y.shape[0]) * np.sum(np.log(correct_acts))
+        
+        
+        # print("reg:",(0.5 * np.sum(np.square(self.wts))))
+        # loss = -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
+        # return loss
 
     def forward(self, inputs):
         '''Computes the forward pass through this particular layer.
@@ -180,7 +188,12 @@ class Layer():
         -----------
         A COPY (not a reference) of net_act.
         '''
-        pass
+        self.input = inputs
+        print(self.net_in)
+        self.compute_net_in()
+        print(self.net_in)
+        self.compute_net_act()
+        return self.net_act.copy()
 
     def backward(self, d_upstream, y):
         '''Do the backward pass through this layer.
@@ -292,7 +305,15 @@ class Layer():
         Throw an error if the activation function string is not one that you
         implemented.
         '''
-        pass
+        if self.activation == "linear":
+            self.linear()
+        elif self.activation == "relu":
+            self.relu()
+        elif self.activation == "softmax":
+            self.softmax()
+        else:
+            raise Exception("THAT ACTIVATION IS NOT ALLOWED, CHIEF")
+
 
     def backward_netAct_to_netIn(self, d_upstream, y):
         '''Calculates the gradient `d_net_in` for the current layer.
@@ -319,10 +340,13 @@ class Layer():
 
         '''
         if self.activation == 'relu':
+            pass
             # TODO: compute correct gradient here
         elif self.activation == 'linear':
+            pass
             # TODO: compute correct gradient here
         elif self.activation == 'softmax':
+            pass
             # TODO: compute correct gradient here
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
@@ -436,8 +460,12 @@ class Conv2D(Layer):
         2. Scale the magnitude of the wts by `wt_scale`.
         3. Initialize this layer's bias in the same way. shape=(n_kers,)
         '''
-        pass
 
+        #making stdev 0.01 is necessary to match up with test cases in jupyter notebook
+        self.wts = np.random.normal(0, .01, (n_kers, n_chans, ker_sz, ker_sz))
+        self.wts = self.wts * wt_scale
+        self.bias = np.random.normal(0, .01, (n_kers,))
+        self.kers = np.random.normal(0, 1.0, (n_kers, n_chans, ker_sz, ker_sz))
     def compute_net_in(self):
         '''Computes `self.net_in` via convolution.
         Convolve the input tensor with the layer's learned convolution kernels.
@@ -457,7 +485,7 @@ class Conv2D(Layer):
         Hint:
         This should be an easy one-liner, you've done all the hard work last week :)
         '''
-        pass
+        self.net_in = filter_ops.conv2nn(self.input, self.kers, self.bias)
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):
         '''Computes backward `dprev_net_act`, `d_wts`, d_b` gradients that gets us
@@ -583,7 +611,7 @@ class MaxPooling2D(Layer):
         Hint:
         This should be an easy one-liner, you've done all the hard work last week :)
         '''
-        pass
+        return filter_ops.max_poolnn(self.input, self.pool_size, self.strides)
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):
         '''Computes the dprev_net_act gradient, getting us thru the MaxPool2D layer to the layer
