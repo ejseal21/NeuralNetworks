@@ -462,10 +462,10 @@ class Conv2D(Layer):
         '''
 
         #making stdev 0.01 is necessary to match up with test cases in jupyter notebook
-        self.wts = np.random.normal(0, .01, (n_kers, n_chans, ker_sz, ker_sz))
+        self.wts = np.random.normal(0, 1, (n_kers, n_chans, ker_sz, ker_sz))
         self.wts = self.wts * wt_scale
-        self.bias = np.random.normal(0, .01, (n_kers,))
-        self.kers = np.random.normal(0, 1.0, (n_kers, n_chans, ker_sz, ker_sz))
+        self.b = np.random.normal(0, .01, (n_kers,))
+        self.kers = np.ones((n_kers, n_chans, ker_sz, ker_sz))
     def compute_net_in(self):
         '''Computes `self.net_in` via convolution.
         Convolve the input tensor with the layer's learned convolution kernels.
@@ -485,7 +485,7 @@ class Conv2D(Layer):
         Hint:
         This should be an easy one-liner, you've done all the hard work last week :)
         '''
-        self.net_in = filter_ops.conv2nn(self.input, self.kers, self.bias)
+        self.net_in = filter_ops.conv2nn(self.input, self.kers, self.b)
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):
         '''Computes backward `dprev_net_act`, `d_wts`, d_b` gradients that gets us
@@ -611,7 +611,8 @@ class MaxPooling2D(Layer):
         Hint:
         This should be an easy one-liner, you've done all the hard work last week :)
         '''
-        return filter_ops.max_poolnn(self.input, self.pool_size, self.strides)
+        # self.net_in = filter_ops.conv2nn(self.input, self.kers, self.b)
+        self.net_in = filter_ops.max_poolnn(self.input, self.pool_size, self.strides)
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):
         '''Computes the dprev_net_act gradient, getting us thru the MaxPool2D layer to the layer
