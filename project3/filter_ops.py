@@ -298,8 +298,7 @@ def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
     out_x = get_pooling_out_shape(img_x, pool_size, strides)
     out_y = get_pooling_out_shape(img_y, pool_size, strides)
     
-    out = np.zeros(inputs.shape)
-    all_out = []
+    out = np.zeros((mini_batch_sz, n_chans, out_y, out_x))
     if verbose:
         print("Your output shape is", out.shape)
     for samp in range(mini_batch_sz):
@@ -307,6 +306,5 @@ def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
             for i in range(out_x):
                 for j in range(out_y):
                     window = inputs[samp, c, j*strides:j*strides + pool_size, i*strides:i*strides+pool_size] #window is a region that will produce a single value in out
-                    out[samp, c,j,i] = np.max(window)
-        # all_out.append(out)
+                    out[samp, c, j, i] = np.max(window)
     return out
