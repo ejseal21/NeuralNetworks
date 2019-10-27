@@ -166,11 +166,6 @@ class Layer():
         correct_acts = self.net_act[np.arange(self.net_act.shape[0]), y]
         return -(1/y.shape[0]) * np.sum(np.log(correct_acts))
         
-        
-        # print("reg:",(0.5 * np.sum(np.square(self.wts))))
-        # loss = -np.mean(np.log(correct_acts), axis=0) + reg*(0.5 * np.sum(np.square(self.wts)))
-        # return loss
-
     def forward(self, inputs):
         '''Computes the forward pass through this particular layer.
 
@@ -189,9 +184,7 @@ class Layer():
         A COPY (not a reference) of net_act.
         '''
         self.input = inputs
-        print(self.net_in)
         self.compute_net_in()
-        print(self.net_in)
         self.compute_net_act()
         return self.net_act.copy()
 
