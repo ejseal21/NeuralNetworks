@@ -378,7 +378,9 @@ class Dense(Layer):
         2. Initialize this layer's bias terms to a 1d ndarray (same way as wts).
         Each unit in this layer has its own bias term.
         '''
-        pass
+        self.wts = np.random.normal(0, 1, (n_units_prev_layer, units))
+        self.wts = self.wts * wt_scale
+        self.b = np.random.normal(0, .001, (units))
 
     def compute_net_in(self):
         '''Computes `self.net_in` via Dense dot product of inputs (like in ADALINE/a MLP).
@@ -391,7 +393,10 @@ class Dense(Layer):
 
         Hint: You did this in Project 0
         '''
-        pass
+        collapsed_input = np.reshape(self.input, (self.input.shape[0], self.input.shape[1] * self.input.shape[2] * self.input.shape[3]))#np.sum(self.input, axis=(1,2,3), keepdims=True)
+        print('new shape',collapsed_input.shape)
+        self.net_in = np.dot(collapsed_input, self.wts) + self.b
+
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):
         '''Computes the `dprev_net_act`, `d_wts`, `d_b` gradients for a Dense layer.
