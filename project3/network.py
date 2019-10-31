@@ -9,6 +9,7 @@ import numpy as np
 
 import layer
 import optimizer
+import filter_ops
 
 np.random.seed(0)
 
@@ -207,7 +208,19 @@ class Network():
         2. Compute and get the weight regularization via `self.wt_reg_reduce()` (implement this next)
         4. Return the sum of the loss and the regularization term.
         '''
-        pass
+        
+        print(inputs.shape)
+        output = self.layers[0].forward(inputs)        
+        for i in range(1, len(self.layers)):
+            print("i:",i)
+            print("output.shape",output.shape)
+            output = self.layers[i].forward(output)
+
+        loss = self.layers[-1].loss(y, self.reg)
+        wt_reg = self.wt_reg_reduce()
+
+        return loss + wt_reg
+
 
     def wt_reg_reduce(self):
         '''Computes the loss weight regularization for all network layers that have weights
@@ -221,7 +234,10 @@ class Network():
         The network regularization `wt_reg` is simply the sum of all the regularization terms
         for each individual layer.
         '''
-        pass
+        wt_reg = 0
+        for i in self.wt_layer_inds:
+            wt_reg += self.reg * (0.5 * np.sum(np.square(self.layers[i].get_wts())))
+        return wt_reg
 
     def backward(self, y):
         '''Initiates the backward pass through all the layers of the network.
@@ -281,13 +297,13 @@ class ConvNet4(Network):
         super().__init__(reg, verbose)
 
         n_chans, h, w = input_shape
-
         # 1) Input convolutional layer
-
+        self.layers.append(layer.Conv2D(len(self.layers), 'Conv2', n_kers[0], ker_sz[0], n_chans, wt_scale, activation='relu', reg=reg, verbose=verbose))
         # 2) 2x2 max pooling layer
-
+        self.layers.append(layer.MaxPooling2D(len(self.layers),'MaxPool', pooling_sizes[0], pooling_strides[0], 'linear', reg, verbose))
         # 3) Dense layer
-
+        self.layers.append(layer.Dense(len(self.layers), 'DenseRelu', dense_interior_units[0], (filter_ops.get_pooling_out_shape(w, pooling_sizes[0], pooling_strides[0])**2) * n_kers[0] , wt_scale, 'relu', reg, verbose))
         # 4) Dense softmax output layer
-
-        # self.wt_layer_inds = ???
+        self.layers.append(layer.Dense(len(self.layers), 'DenseSoftMax', dense_interior_units[0], self.layers[-1].get_units(), wt_scale, 'softmax', reg, verbose))
+        #only the indices of layers that have weights
+        self.wt_layer_inds = [0, 2, 3]

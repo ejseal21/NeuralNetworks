@@ -45,6 +45,7 @@ class Layer():
         self.wt_optimizer = None
         self.b_optimizer = None
 
+
     def get_wts(self):
         '''Get a copy of this layer's weights.
         '''
@@ -378,9 +379,13 @@ class Dense(Layer):
         2. Initialize this layer's bias terms to a 1d ndarray (same way as wts).
         Each unit in this layer has its own bias term.
         '''
+        self.units = units
         self.wts = np.random.normal(0, 1, (n_units_prev_layer, units))
         self.wts = self.wts * wt_scale
         self.b = np.random.normal(0, .001, (units))
+
+    def get_units(self):
+        return self.units
 
     def compute_net_in(self):
         '''Computes `self.net_in` via Dense dot product of inputs (like in ADALINE/a MLP).
@@ -393,7 +398,7 @@ class Dense(Layer):
 
         Hint: You did this in Project 0
         '''
-        collapsed_input = np.reshape(self.input, (self.input.shape[0], self.input.shape[1] * self.input.shape[2] * self.input.shape[3]))#np.sum(self.input, axis=(1,2,3), keepdims=True)
+        collapsed_input = np.reshape(self.input, (self.input.shape[0], -1))#self.input.shape[1] * self.input.shape[2] * self.input.shape[3]))#np.sum(self.input, axis=(1,2,3), keepdims=True)
         print('new shape',collapsed_input.shape)
         self.net_in = np.dot(collapsed_input, self.wts) + self.b
 
@@ -592,6 +597,7 @@ class MaxPooling2D(Layer):
         '''
         self.pool_size = pool_size
         self.strides = strides
+        
 
     def compute_net_in(self):
         '''Computes `self.net_in` via max pooling.
@@ -643,6 +649,8 @@ class MaxPooling2D(Layer):
         '''
         mini_batch_sz, n_chans, img_y, img_x = self.input.shape
         mini_batch_sz_d, n_chans_d, out_y, out_x = d_upstream.shape
+
+
 
         if mini_batch_sz != mini_batch_sz_d:
             print(f'mini-batches do not match! {mini_batch_sz} != {mini_batch_sz_d}')
