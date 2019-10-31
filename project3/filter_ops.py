@@ -172,6 +172,20 @@ def conv2nn(imgs, kers, bias, verbose=True):
     kers_flipped = []
     for ker in kers:
         kers_flipped.append(np.flip(ker))
+    
+    #compute padding
+    #img_out = np.zeros(shape of input img)
+    #make img_pad: np.zeros(batch_sz, n_kers, img_y + 2padding, img_x + 2padding)
+    #use assignment: img_pad[:,:,p:-p,p:-p] = img
+    #for batch
+        #for flipped_kers
+            #for img_y
+                #for img_x
+                    #kers: (K, D, ker_sz, ker_sz)
+                    #img_out: (B, K, img_y, img_x)
+                    #img_out = kers[k] * img_pad[b, :,  i:i+ker_x, j:j+ker_y]
+
+
     #generate output array
 
     #flip all kernels
@@ -196,7 +210,7 @@ def conv2nn(imgs, kers, bias, verbose=True):
                     #put the correct pixel value in the pixel
                     img_out[k, :, j, i] = np.sum(window, axis=(1, 2))
                     
-        img_out = img_out + bias #bias
+                img_out = img_out + bias #bias
         imgs_out[img] = np.transpose(np.squeeze(np.sum(img_out, axis=1)), (0, 2, 1))
     return imgs_out
 
