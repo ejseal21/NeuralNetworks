@@ -216,7 +216,7 @@ class Network():
             print("output.shape",output.shape)
             output = self.layers[i].forward(output)
 
-        loss = self.layers[-1].loss(y,self.reg)
+        loss = self.layers[-1].loss(y, self.reg)
         wt_reg = self.wt_reg_reduce()
 
         return loss + wt_reg
