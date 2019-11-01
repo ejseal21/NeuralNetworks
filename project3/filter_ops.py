@@ -173,10 +173,10 @@ def conv2nn(imgs, kers, bias, verbose=True):
     padding_amount = math.ceil((ker_x - 1)/2)
 
     imgs_out = np.zeros((batch_sz, n_kers,img_y,img_x))
-    print(imgs_out.shape)
+    # print(imgs_out.shape)
     #make img_pad:
     imgs_pad = np.zeros((batch_sz, n_chans, img_y + 2*padding_amount, img_x + 2*padding_amount))
-    print(imgs_pad.shape)
+    # print(imgs_pad.shape)
     #use assignment: 
     imgs_pad[:,:,padding_amount:img_y +padding_amount, padding_amount:img_x +padding_amount] = imgs
 

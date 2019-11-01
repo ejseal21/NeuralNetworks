@@ -398,7 +398,7 @@ class Dense(Layer):
         Hint: You did this in Project 0
         '''
         collapsed_input = np.reshape(self.input, (self.input.shape[0], -1))#self.input.shape[1] * self.input.shape[2] * self.input.shape[3]))#np.sum(self.input, axis=(1,2,3), keepdims=True)
-        print('new shape',collapsed_input.shape)
+        # print('new shape',collapsed_input.shape)
         self.net_in = np.dot(collapsed_input, self.wts) + self.b
 
 
