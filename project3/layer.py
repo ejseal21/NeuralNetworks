@@ -1,6 +1,6 @@
 '''layer.py
 Represents a layer of a neural network
-YOUR NAMES HERE
+COLE TURNER AND ETHAN SEAL
 CS343: Neural Networks
 Project 3: Convolutional Neural Networks
 '''
@@ -218,6 +218,8 @@ class Layer():
         # with respect to the last layer's netAct function (softmax)
         if d_upstream is None:
             d_upstream = self.compute_dlast_net_act()
+        d_net_in = self.backward_netAct_to_netIn(d_upstream, y)
+        
 
     def compute_dlast_net_act(self):
         '''Computes the gradient of the loss function with respect to the last layer's netAct.
@@ -331,17 +333,14 @@ class Layer():
         1. Implement gradient for linear
         2. Implement gradient for relu
         2. Implement gradient for softmax
-
         '''
+
         if self.activation == 'relu':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * np.where(self.net_act < 0, 0, self.net_act)
         elif self.activation == 'linear':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * self.net_act
         elif self.activation == 'softmax':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * (self.net_act * (1-self.net_in))
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in

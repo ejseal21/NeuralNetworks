@@ -259,7 +259,7 @@ class Network():
         '''
         d_upstream, d_wts, d_b = None, None, None
         for i in range(len(self.layers), 0):
-            self.layers[i] 
+            d_upstream = self.layers[i].backward()
 
 
 class ConvNet4(Network):
