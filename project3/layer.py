@@ -1,6 +1,6 @@
 '''layer.py
 Represents a layer of a neural network
-YOUR NAMES HERE
+COLE TURNER AND ETHAN SEAL
 CS343: Neural Networks
 Project 3: Convolutional Neural Networks
 '''
@@ -218,6 +218,12 @@ class Layer():
         # with respect to the last layer's netAct function (softmax)
         if d_upstream is None:
             d_upstream = self.compute_dlast_net_act()
+        d_net_in = self.backward_netAct_to_netIn(d_upstream, y)
+        dprev_net_act, d_wts, d_b = self.backward_netIn_to_prevLayer_netAct(d_net_in)
+        self.d_wts = d_wts
+        self.d_b = d_b
+        return dprev_net_act, d_wts, d_b
+
 
     def compute_dlast_net_act(self):
         '''Computes the gradient of the loss function with respect to the last layer's netAct.
@@ -331,17 +337,14 @@ class Layer():
         1. Implement gradient for linear
         2. Implement gradient for relu
         2. Implement gradient for softmax
-
         '''
+
         if self.activation == 'relu':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * np.where(self.net_act < 0, 0, self.net_act)
         elif self.activation == 'linear':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * self.net_act
         elif self.activation == 'softmax':
-            pass
-            # TODO: compute correct gradient here
+            d_net_in = d_upstream * (self.net_act * (1-self.net_in))
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in
@@ -431,7 +434,12 @@ class Dense(Layer):
             Shape errors will frequently show up at this backprop stage, one layer down.
         Regularize your wts
         '''
-        pass
+        dprev_net_act = d_upstream @ self.wts.T
+        reshaped = np.reshape(self.input, dprev_net_act.shape)
+        d_wts = (d_upstream.T @ reshaped).T
+        d_b = np.sum(d_upstream, axis=0)
+        dprev_net_act = np.reshape(dprev_net_act, self.input.shape)
+        return dprev_net_act, d_wts, d_b
 
 
 class Conv2D(Layer):
@@ -650,8 +658,6 @@ class MaxPooling2D(Layer):
         mini_batch_sz, n_chans, img_y, img_x = self.input.shape
         mini_batch_sz_d, n_chans_d, out_y, out_x = d_upstream.shape
 
-
-
         if mini_batch_sz != mini_batch_sz_d:
             print(f'mini-batches do not match! {mini_batch_sz} != {mini_batch_sz_d}')
             exit()
@@ -659,7 +665,32 @@ class MaxPooling2D(Layer):
         if n_chans != n_chans_d:
             print(f'n_chans do not match! {n_chans} != {n_chans_d}')
             exit()
-        pass
+
+        dprev_net_act = np.zeros(self.input.shape)
+        for y in range(0, img_y-self.pool_size,1):
+            for x in range(0,img_x-self.pool_size, 1):
+                window = self.input[:, :, y:y+self.pool_size, x:x+self.pool_size]
+                # print(window)
+                # print(self.ind2sub(np.argmax(window), window.shape))
+                print(window.shape)
+                index = list(self.ind2sub(np.argmax(window), window.shape))
+                print(index)
+                index[2] += y
+                index[3] += x
+                # print(dprev_net_act.shape)
+                # print(d_upstream.shape)
+                # print(index[0])
+                # print(index[1])
+                # print(d_upstream[y,x])
+
+                # print(dprev_net_act[index[0], index[1]])
+                dprev_net_act[index[0],index[1],index[2],index[3]] += d_upstream[:,:,y, x]
+                print(dprev_net_act.shape)
+            print(dprev_net_act.shape)
+
+        print("LAST ONE")
+        print(dprev_net_act)
+        return dprev_net_act
 
     def ind2sub(self, linear_ind, sz):
         '''Converts a linear index to a subscript index based on the window size sz
