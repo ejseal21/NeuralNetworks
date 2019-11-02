@@ -220,6 +220,11 @@ class Layer():
             d_upstream = self.compute_dlast_net_act()
         d_net_in = self.backward_netAct_to_netIn(d_upstream, y)
         
+        dprev_net_act, d_wts, d_b = self.backward_netIn_to_prevLayer_netAct(d_net_in)
+        self.d_wts = d_wts
+        self.d_b = d_b
+        return dprev_net_act, d_wts, d_b
+
 
     def compute_dlast_net_act(self):
         '''Computes the gradient of the loss function with respect to the last layer's netAct.
@@ -336,11 +341,11 @@ class Layer():
         '''
 
         if self.activation == 'relu':
-            d_net_in = d_upstream * np.where(self.net_act < 0, 0, self.net_act)
+            d_net_in = d_upstream * np.where(self.net_in < 0, 0, 1)
         elif self.activation == 'linear':
-            d_net_in = d_upstream * self.net_act
+            d_net_in = d_upstream
         elif self.activation == 'softmax':
-            d_net_in = d_upstream * (self.net_act * (1-self.net_in))
+            d_net_in = d_upstream * (self.net_act * (1-self.net_in)) #maybe y - self.net_act?
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in
@@ -430,7 +435,12 @@ class Dense(Layer):
             Shape errors will frequently show up at this backprop stage, one layer down.
         Regularize your wts
         '''
-        pass
+        dprev_net_act = d_upstream @ self.wts.T
+        reshaped = np.reshape(self.input, dprev_net_act.shape)
+        d_wts = (d_upstream.T @ reshaped).T
+        d_b = np.sum(d_upstream, axis=0)
+        dprev_net_act = np.reshape(dprev_net_act, self.input.shape)
+        return dprev_net_act, d_wts, d_b
 
 
 class Conv2D(Layer):
@@ -649,8 +659,6 @@ class MaxPooling2D(Layer):
         mini_batch_sz, n_chans, img_y, img_x = self.input.shape
         mini_batch_sz_d, n_chans_d, out_y, out_x = d_upstream.shape
 
-
-
         if mini_batch_sz != mini_batch_sz_d:
             print(f'mini-batches do not match! {mini_batch_sz} != {mini_batch_sz_d}')
             exit()
@@ -658,7 +666,19 @@ class MaxPooling2D(Layer):
         if n_chans != n_chans_d:
             print(f'n_chans do not match! {n_chans} != {n_chans_d}')
             exit()
-        pass
+
+        dprev_net_act = np.zeros(self.input.shape)
+        for y in range(out_x):
+            for x in range(out_y):
+                window = self.input[:, :, y*self.strides:y*self.strides +self.pool_size, x*self.strides:x*self.strides+self.pool_size]
+                print("window:",window[2:])
+                index = list(self.ind2sub(np.argmax(window), window.shape))
+                
+                print('index',index[2], ',', index[3])
+                index[2] += y
+                index[3] += x
+                dprev_net_act[:, :, y + index[2], x + index[3]] += d_upstream[:, :, y, x]
+        return dprev_net_act, None, None
 
     def ind2sub(self, linear_ind, sz):
         '''Converts a linear index to a subscript index based on the window size sz
