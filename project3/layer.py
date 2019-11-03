@@ -668,16 +668,21 @@ class MaxPooling2D(Layer):
             exit()
 
         dprev_net_act = np.zeros(self.input.shape)
-        for y in range(out_x):
-            for x in range(out_y):
-                window = self.input[:, :, y*self.strides:y*self.strides +self.pool_size, x*self.strides:x*self.strides+self.pool_size]
-                print("window:",window[2:])
-                index = list(self.ind2sub(np.argmax(window), window.shape))
-                
-                print('index',index[2], ',', index[3])
-                index[2] += y
-                index[3] += x
-                dprev_net_act[:, :, y + index[2], x + index[3]] += d_upstream[:, :, y, x]
+        for b in range(mini_batch_sz):
+            for chan in range(n_chans):
+                for y in range(out_x):
+                    for x in range(out_y):
+                        window = self.input[b, chan, y*self.strides:y*self.strides +
+                                            self.pool_size, x*self.strides:x*self.strides+self.pool_size]
+                        # print("window:",window[2:])
+                        index = list(self.ind2sub(
+                            np.argmax(window), window.shape))
+
+                        print('index', index[0], ',', index[1])
+                        index[0] += y
+                        index[1] += x
+                        dprev_net_act[b, chan, y + index[0], x +
+                                      index[1]] += d_upstream[b, chan, y, x]
         return dprev_net_act, None, None
 
     def ind2sub(self, linear_ind, sz):
