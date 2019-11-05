@@ -209,11 +209,8 @@ class Network():
         4. Return the sum of the loss and the regularization term.
         '''
         
-        # print(inputs.shape)
         output = self.layers[0].forward(inputs)        
         for i in range(1, len(self.layers)):
-            # print("i:",i)
-            # print("output.shape",output.shape)
             output = self.layers[i].forward(output)
 
         loss = self.layers[-1].loss(y, self.reg)
@@ -307,7 +304,8 @@ class ConvNet4(Network):
         # 2) 2x2 max pooling layer
         self.layers.append(layer.MaxPooling2D(len(self.layers),'MaxPool', pooling_sizes[0], pooling_strides[0], 'linear', reg, verbose))
         # 3) Dense layer
-        self.layers.append(layer.Dense(len(self.layers), 'DenseRelu', dense_interior_units[0], (filter_ops.get_pooling_out_shape(w, pooling_sizes[0], pooling_strides[0])**2) * n_kers[0] , wt_scale, 'relu', reg, verbose))
+        self.layers.append(layer.Dense(len(self.layers), 'DenseRelu', dense_interior_units[0], (filter_ops.get_pooling_out_shape(w, pooling_sizes[0], 
+                pooling_strides[0])**2) * n_kers[0] , wt_scale, 'relu', reg, verbose))
 
         # 4) Dense softmax output layer
         self.layers.append(layer.Dense(len(self.layers), 'DenseSoftMax', n_classes, self.layers[-1].get_units(), wt_scale, 'softmax', reg, verbose))

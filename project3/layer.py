@@ -218,11 +218,12 @@ class Layer():
         # with respect to the last layer's netAct function (softmax)
         if d_upstream is None:
             d_upstream = self.compute_dlast_net_act()
+
         d_net_in = self.backward_netAct_to_netIn(d_upstream, y)
-        
         dprev_net_act, d_wts, d_b = self.backward_netIn_to_prevLayer_netAct(d_net_in)
         self.d_wts = d_wts
         self.d_b = d_b
+
         return dprev_net_act, d_wts, d_b
 
 
@@ -339,16 +340,13 @@ class Layer():
         2. Implement gradient for relu
         2. Implement gradient for softmax
         '''
-
         if self.activation == 'relu':
-            print("d_upstream", len(d_upstream))
-            print('upstream', d_upstream.shape)
-            print("net_in", self.net_in.shape)
             d_net_in = d_upstream * np.where(self.net_in < 0, 0, 1)
         elif self.activation == 'linear':
             d_net_in = d_upstream
         elif self.activation == 'softmax':
-            d_net_in = d_upstream * (self.net_act * (1-self.net_in)) #maybe y - self.net_act?
+            one_hot = self.one_hot(y, self.net_act.shape[1])
+            d_net_in = d_upstream * (self.net_act * (one_hot-self.net_act))
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in
@@ -389,7 +387,7 @@ class Dense(Layer):
         self.units = units
         self.wts = np.random.normal(0, 1, (n_units_prev_layer, units))
         self.wts = self.wts * wt_scale
-        self.b = np.random.normal(0, .001, (units))
+        self.b = np.random.normal(0, wt_scale, (units))
 
     def get_units(self):
         return self.units
@@ -480,7 +478,7 @@ class Conv2D(Layer):
         #making stdev 0.01 is necessary to match up with test cases in jupyter notebook
         self.wts = np.random.normal(0, 1, (n_kers, n_chans, ker_sz, ker_sz))
         self.wts = self.wts * wt_scale
-        self.b = np.random.normal(0, .01, (n_kers,))
+        self.b = np.random.normal(0, wt_scale, (n_kers,))
         self.kers = np.ones((n_kers, n_chans, ker_sz, ker_sz))
     def compute_net_in(self):
         '''Computes `self.net_in` via convolution.
