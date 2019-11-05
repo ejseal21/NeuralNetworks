@@ -259,9 +259,9 @@ class Network():
             Remember that the output of layer.backward() becomes the d_upstream to the next layer down.
             We don't care about d_wts, d_b in this method (computed/stored in Layer).
         '''
-        d_upstream, d_wts, d_b = None, None, None
-        for i in range(len(self.layers), 0):
-            d_upstream = self.layers[i].backward()
+        d_upstream, d_wts, d_b = None, None, None 
+        for i in range(len(self.layers)-1, -1, -1):
+            d_upstream, d_wts, d_b = self.layers[i].backward(d_upstream, y)
 
 
 class ConvNet4(Network):

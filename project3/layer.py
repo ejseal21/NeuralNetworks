@@ -341,6 +341,9 @@ class Layer():
         '''
 
         if self.activation == 'relu':
+            print("d_upstream", len(d_upstream))
+            print('upstream', d_upstream.shape)
+            print("net_in", self.net_in.shape)
             d_net_in = d_upstream * np.where(self.net_in < 0, 0, 1)
         elif self.activation == 'linear':
             d_net_in = d_upstream
@@ -438,6 +441,7 @@ class Dense(Layer):
         dprev_net_act = d_upstream @ self.wts.T
         reshaped = np.reshape(self.input, dprev_net_act.shape)
         d_wts = (d_upstream.T @ reshaped).T
+        self.d_wts = d_wts
         d_b = np.sum(d_upstream, axis=0)
         dprev_net_act = np.reshape(dprev_net_act, self.input.shape)
         return dprev_net_act, d_wts, d_b
@@ -574,7 +578,7 @@ class Conv2D(Layer):
 
         # regularize the weight gradient
         d_wts += self.reg*self.wts
-
+        self.d_wts = d_wts
         return dprev_net_act, d_wts, d_b
 
 
@@ -678,7 +682,6 @@ class MaxPooling2D(Layer):
                         index = list(self.ind2sub(
                             np.argmax(window), window.shape))
 
-                        print('index', index[0], ',', index[1])
                         index[0] += y
                         index[1] += x
                         dprev_net_act[b, chan, y + index[0], x +
