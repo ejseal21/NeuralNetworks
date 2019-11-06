@@ -60,7 +60,11 @@ class SGD(Optimizer):
         TODO: Write the SGD weight update rule.
         See notebook for review of equations.
         '''
-        pass
+
+        self.wts = self.wts - self.lr*self.d_wts
+
+        return self.wts.copy()
+        
 
 
 class SGD_Momentum(Optimizer):
@@ -89,7 +93,11 @@ class SGD_Momentum(Optimizer):
         TODO: Write the SGD with momentum weight update rule.
         See notebook for review of equations.
         '''
-        pass
+
+        self.velocity = (self.m * self.velocity) - (self.lr*self.d_wts)
+        self.wts = self.wts + self.velocity
+        
+        return self.wts.copy()
 
 
 class Adam(Optimizer):
