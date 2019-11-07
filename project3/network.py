@@ -133,7 +133,8 @@ class Network():
         - The most active net_in values in the output layer gives us the predictions.
         (We don't need to check net_act).
         '''
-        pass
+        return self.forward(inputs, None)
+        
 
     def accuracy(self, inputs, y, samp_sz=500, mini_batch_sz=15):
         '''Computes accuracy using current net on the inputs `inputs` with classes `y`.
@@ -208,18 +209,20 @@ class Network():
         2. Compute and get the weight regularization via `self.wt_reg_reduce()` (implement this next)
         4. Return the sum of the loss and the regularization term.
         '''
-        
-        output = self.layers[0].forward(inputs)        
-        for i in range(1, len(self.layers)):
-            output = self.layers[i].forward(output)
+        if y != None:
+            output = self.layers[0].forward(inputs)        
+            for i in range(1, len(self.layers)):
+                output = self.layers[i].forward(output)
 
-        loss = self.layers[-1].loss(y, self.reg)
-        wt_reg = self.wt_reg_reduce()
+            loss = self.layers[-1].loss(y, self.reg)
+            wt_reg = self.wt_reg_reduce()
 
-        print(wt_reg)
+            print(wt_reg)
 
-        return loss + wt_reg
+            return loss + wt_reg
 
+        else:
+            return output
 
     def wt_reg_reduce(self):
         '''Computes the loss weight regularization for all network layers that have weights
