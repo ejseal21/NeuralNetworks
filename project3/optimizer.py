@@ -16,6 +16,10 @@ class Optimizer():
     def prepare(self, wts, d_wts):
         '''Stores weights and their gradient before an update step is performed.
         '''
+        if self.velocity is None:
+            self.velocity = 0
+        else:
+            print("VELOCITY IS NOT NONE")
         self.wts = wts
         self.d_wts = d_wts
 
@@ -93,6 +97,7 @@ class SGD_Momentum(Optimizer):
         TODO: Write the SGD with momentum weight update rule.
         See notebook for review of equations.
         '''
+        
 
         self.velocity = (self.m * self.velocity) - (self.lr*self.d_wts)
         self.wts = self.wts + self.velocity
