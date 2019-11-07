@@ -125,7 +125,7 @@ class Adam(Optimizer):
         self.t = t
 
         self.m = None
-        self.v = None
+        self.velocity = None
 
     def update_weights(self):
         '''Updates the weights according to Adam and returns a
@@ -144,4 +144,19 @@ class Adam(Optimizer):
         - Remember that t should = 1 on the 1st wt update.
         - Remember to update/save the new values of m, v between updates.
         '''
-        pass
+        
+        try: #comparing an array to None throws an error, but if it throws an error, then it is not None
+            if self.m == None:
+                self.m = np.zeros(self.wts.shape)
+            if self.velocity == None:
+                self.velocity = np.zeros(self.wts.shape)
+        except:
+            pass       
+        self.t += 1
+        
+        self.m = (self.beta1 * self.m) + (1- self.beta1) * self.d_wts
+        self.velocity = (self.beta2 * self.velocity) + (1-self.beta2) * self.d_wts * self.d_wts
+        n = self.m / (1-(self.beta1**self.t))
+        u = self.velocity / (1-(self.beta2**self.t))
+        self.wts = self.wts - (self.lr * n) / (np.sqrt(u) + self.eps)
+        return self.wts
