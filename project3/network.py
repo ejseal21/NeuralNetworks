@@ -62,7 +62,7 @@ class Network():
         for l in [self.layers[i] for i in self.wt_layer_inds]:
             l.compile(optimizer_name, **kwargs)
 
-    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=4):
+    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=4, print_every=1):
         '''Trains the neural network on data
 
         Parameters:
@@ -100,15 +100,32 @@ class Network():
 
         print('Starting to train...')
         print(f'{n_iter} iterations. {iter_per_epoch} iter/epoch.')
+        sec = time.clock_gettime()
+        for i in range(n_iter):
+            #generate random indices with replacement for cur_samps and cur_labels
+            #indices are guaranteed to match for samps and labels
+            random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
+            cur_samps = x_train[random_indices]
+            cur_labels = y_train[random_indices]
+            loss = self.forward(cur_samps, cur_labels, self.reg)
+            loss_history.append(loss)
+            self.backward(y)
+            for layer in self.layers:
+                layer.update_weights()
 
-        # TODO: Put this in your main training loop
-        if (i+1) % acc_freq == 0:
-            train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
-            val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
+            if i == 0:
+                dt = time.clock_gettime() - sec
+                print("Time taken for iteration 0:", dt)
+                time_est = dt * n_iter
+                print("Estimated time to complete:", time_est)
 
-            self.train_acc_history.append(train_acc)
-            self.validation_acc_history.append(val_acc)
-            print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
+            if (i+1) % acc_freq == 0:
+                train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
+                val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
+
+                self.train_acc_history.append(train_acc)
+                self.validation_acc_history.append(val_acc)
+                print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
 
     def predict(self, inputs):
         '''Classifies novel inputs presented to the network using the current
@@ -133,7 +150,7 @@ class Network():
         - The most active net_in values in the output layer gives us the predictions.
         (We don't need to check net_act).
         '''
-        return self.forward(inputs, None)
+        return self.forward(inputs, None) #does this actually return predicted class? Who knows?
         
 
     def accuracy(self, inputs, y, samp_sz=500, mini_batch_sz=15):
