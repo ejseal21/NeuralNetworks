@@ -1,6 +1,6 @@
 '''preprocess_data.py
 Preprocessing data in STL-10 image dataset
-YOUR NAMES HERE
+Cole Turner and Ethan Seal
 CS343: Neural Networks
 Project 2: Multilayer Perceptrons
 '''
@@ -25,14 +25,15 @@ def preprocess_stl(imgs, labels):
     3) Compute the mean image across the dataset, subtract it from the dataset
     4) Fix class labeling. Should span 0, 1, ..., 9 NOT 1,2,...10
     '''
+    print('imgs.shape',imgs.shape)
+
 
     imgs = imgs.astype(np.float64)
     # imgs = imgs - imgs.mean
     imgs = (imgs) / 255.0
     imgs = imgs - np.mean(imgs, axis = 0)
     # imgs = (imgs)/imgs.std()    
-
-    imgs = np.reshape(imgs, (5000, 3072))
+    imgs = np.reshape(imgs, (5000, -1))
     labels = labels - 1
 
     return imgs, labels
@@ -78,16 +79,19 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
         return
 
     # FILL IN CODE HERE
+    print('data.shape',data.shape)
 
     #reshape the data into respective sizes and compress last 
-    x_train = data[0:int(len(data)*.7), :].reshape(3500,3072)
-    y_train = y[0:int(len(y)*.7)]
-    x_test = data[int(len(data)*.7):int(len(data)*.8), :].reshape(500,3072)
-    y_test = y[int(len(y)*.7):int(len(y)*.8)]
-    x_val = data[int(len(data)*.8):int(len(data)*.9), :].reshape(500,3072)
-    y_val = y[int(len(y)*.8):int(len(y)*.9)]
-    x_dev = data[int(len(data)*.9):, :].reshape(500,3072)
-    y_dev = y[int(len(y)*.9):]
+    # x_train = data[0:int(len(data)*.7), :].reshape(n_train_samps, data.shape[1])
+    x_train = data[:n_train_samps, :].reshape(n_train_samps, data.shape[1])
+    
+    y_train = y[:n_train_samps]
+    x_test = data[n_train_samps:n_train_samps + n_test_samps, :].reshape(n_test_samps,data.shape[1])
+    y_test = y[n_train_samps:n_train_samps + n_test_samps]
+    x_val = data[n_train_samps + n_test_samps:n_train_samps + n_test_samps + n_valid_samps, :].reshape(n_valid_samps,data.shape[1])
+    y_val = y[n_train_samps + n_test_samps:n_train_samps + n_test_samps + n_valid_samps]
+    x_dev = data[n_train_samps + n_test_samps + n_valid_samps:, :].reshape(n_dev_samps,data.shape[1])
+    y_dev = y[n_train_samps + n_test_samps + n_valid_samps:]
 
 
     return x_train, y_train, x_test, y_test, x_val, y_val, x_dev, y_dev
