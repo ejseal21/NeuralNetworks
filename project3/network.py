@@ -94,13 +94,13 @@ class Network():
             train and validation accuracy).
 
         '''
-
+        num_samps, num_features = x_train.shape
         iter_per_epoch = max(int(len(x_train) / mini_batch_sz), 1)
         n_iter = n_epochs * iter_per_epoch
 
         print('Starting to train...')
         print(f'{n_iter} iterations. {iter_per_epoch} iter/epoch.')
-        sec = time.clock_gettime()
+        sec = time.time()
         for i in range(n_iter):
             #generate random indices with replacement for cur_samps and cur_labels
             #indices are guaranteed to match for samps and labels
@@ -114,7 +114,7 @@ class Network():
                 layer.update_weights()
 
             if i == 0:
-                dt = time.clock_gettime() - sec
+                dt = time.time() - sec
                 print("Time taken for iteration 0:", dt)
                 time_est = dt * n_iter
                 print("Estimated time to complete:", time_est)
