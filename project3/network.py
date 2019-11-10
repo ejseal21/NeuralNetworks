@@ -107,7 +107,7 @@ class Network():
             random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
             cur_samps = x_train[random_indices]
             cur_labels = y_train[random_indices]
-            loss = self.forward(cur_samps, cur_labels, self.reg)
+            loss = self.forward(cur_samps, cur_labels)
             loss_history.append(loss)
             self.backward(y)
             for layer in self.layers:
