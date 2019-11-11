@@ -62,7 +62,7 @@ class Network():
         for l in [self.layers[i] for i in self.wt_layer_inds]:
             l.compile(optimizer_name, **kwargs)
 
-    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=4, print_every=1):
+    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=1, print_every=1):
         '''Trains the neural network on data
 
         Parameters:
@@ -95,7 +95,6 @@ class Network():
 
         '''
         num_samps, n_chans, img_y, img_x = x_train.shape
-        print(x_train.shape)
         iter_per_epoch = max(int(len(x_train) / mini_batch_sz), 1)
         n_iter = n_epochs * iter_per_epoch
 
@@ -106,13 +105,10 @@ class Network():
             #generate random indices with replacement for cur_samps and cur_labels
             #indices are guaranteed to match for samps and labels
             random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
-            print(random_indices)
             cur_samps = x_train[random_indices]
-            print(cur_samps.shape)
             cur_labels = y_train[random_indices]
             loss = self.forward(cur_samps, cur_labels)
             self.loss_history.append(loss)
-            print(self.loss_history)
             self.backward(cur_labels) #was y
             for layer in self.layers:
                 layer.update_weights()
@@ -125,7 +121,10 @@ class Network():
 
             if (i+1) % acc_freq == 0:
                 train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
+
+                
                 val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
+                print(y_validate)
 
                 self.train_acc_history.append(train_acc)
                 self.validation_acc_history.append(val_acc)
@@ -154,8 +153,12 @@ class Network():
         - The most active net_in values in the output layer gives us the predictions.
         (We don't need to check net_act).
         '''
-        return self.forward(inputs, None) #does this actually return predicted class? Who knows?
+        for layer in self.layers:
+            inputs = layer.forward(inputs)
         
+        print(np.argmax(self.layers[-1].net_in, axis=1))
+        return np.argmax(self.layers[-1].net_in, axis=1)
+    
 
     def accuracy(self, inputs, y, samp_sz=500, mini_batch_sz=15):
         '''Computes accuracy using current net on the inputs `inputs` with classes `y`.
@@ -231,7 +234,6 @@ class Network():
         4. Return the sum of the loss and the regularization term.
         '''
         # print(y.shape)
-        print(inputs.shape)
         if y is not None:
             output = self.layers[0].forward(inputs)        
             for i in range(1, len(self.layers)):
@@ -240,12 +242,10 @@ class Network():
             loss = self.layers[-1].loss(y, self.reg)
             wt_reg = self.wt_reg_reduce()
 
-            print(wt_reg)
 
             return loss + wt_reg
 
-        else:
-            return self.layers[-1].d_wts[0]
+
 
     def wt_reg_reduce(self):
         '''Computes the loss weight regularization for all network layers that have weights
