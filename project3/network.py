@@ -1,6 +1,6 @@
 '''network.py
 Represents  a neural network (collection of layers)
-YOUR NAMES HERE
+Ethan Seal and Cole Turner
 CS343: Neural Networks
 Project 3: Convolutional Neural Networks
 '''
@@ -62,7 +62,7 @@ class Network():
         for l in [self.layers[i] for i in self.wt_layer_inds]:
             l.compile(optimizer_name, **kwargs)
 
-    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=1, print_every=1):
+    def fit(self, x_train, y_train, x_validate, y_validate, mini_batch_sz=100, n_epochs=10, acc_freq=9, print_every=1):
         '''Trains the neural network on data
 
         Parameters:
@@ -112,6 +112,8 @@ class Network():
             self.backward(cur_labels) #was y
             for layer in self.layers:
                 layer.update_weights()
+            
+            print(f'We are on iteration: {i+1} of {n_iter}. ')
 
             if i == 0:
                 dt = time.time() - sec
@@ -120,9 +122,8 @@ class Network():
                 print("Estimated time to complete:", time_est)
 
             if (i+1) % acc_freq == 0:
+                print(f"Loss History: {self.loss_history}")
                 train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
-
-                
                 val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
                 print(y_validate)
 

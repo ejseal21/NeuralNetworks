@@ -246,8 +246,8 @@ def max_pool(inputs, pool_size=2, strides=1, verbose=True):
     
     out = np.zeros((out_y, out_x))
 
-    if verbose:
-        print("Your output shape is", out.shape)
+    # if verbose:
+        # print("Your output shape is", out.shape)
 
         
     for i in range(out_x):
@@ -290,8 +290,8 @@ def max_poolnn(inputs, pool_size=2, strides=1, verbose=True):
     out_y = get_pooling_out_shape(img_y, pool_size, strides)
     
     out = np.zeros((mini_batch_sz, n_chans, out_y, out_x))
-    if verbose:
-        print("Your output shape is", out.shape)
+    # if verbose:
+        # print("Your output shape is", out.shape)
     for samp in range(mini_batch_sz):
         for c in range(n_chans):
             for i in range(out_x):
