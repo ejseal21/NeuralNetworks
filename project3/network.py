@@ -94,7 +94,8 @@ class Network():
             train and validation accuracy).
 
         '''
-        num_samps, num_features = x_train.shape
+        num_samps, n_chans, img_y, img_x = x_train.shape
+        print(x_train.shape)
         iter_per_epoch = max(int(len(x_train) / mini_batch_sz), 1)
         n_iter = n_epochs * iter_per_epoch
 
@@ -105,11 +106,14 @@ class Network():
             #generate random indices with replacement for cur_samps and cur_labels
             #indices are guaranteed to match for samps and labels
             random_indices = np.random.choice(np.arange(num_samps), size=mini_batch_sz, replace=True)
+            print(random_indices)
             cur_samps = x_train[random_indices]
+            print(cur_samps.shape)
             cur_labels = y_train[random_indices]
             loss = self.forward(cur_samps, cur_labels)
-            loss_history.append(loss)
-            self.backward(y)
+            self.loss_history.append(loss)
+            print(self.loss_history)
+            self.backward(cur_labels) #was y
             for layer in self.layers:
                 layer.update_weights()
 
@@ -226,7 +230,9 @@ class Network():
         2. Compute and get the weight regularization via `self.wt_reg_reduce()` (implement this next)
         4. Return the sum of the loss and the regularization term.
         '''
-        if y != None:
+        # print(y.shape)
+        print(inputs.shape)
+        if y is not None:
             output = self.layers[0].forward(inputs)        
             for i in range(1, len(self.layers)):
                 output = self.layers[i].forward(output)
@@ -239,7 +245,7 @@ class Network():
             return loss + wt_reg
 
         else:
-            return output
+            return self.layers[-1].d_wts[0]
 
     def wt_reg_reduce(self):
         '''Computes the loss weight regularization for all network layers that have weights

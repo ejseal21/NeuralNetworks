@@ -184,6 +184,7 @@ class Layer():
         -----------
         A COPY (not a reference) of net_act.
         '''
+        print(inputs.shape)
         self.input = inputs
         self.compute_net_in()
         self.compute_net_act()
@@ -499,6 +500,7 @@ class Conv2D(Layer):
         Hint:
         This should be an easy one-liner, you've done all the hard work last week :)
         '''
+        print(self.input.shape)
         self.net_in = filter_ops.conv2nn(self.input, self.wts, self.b, verbose=1)
 
     def backward_netIn_to_prevLayer_netAct(self, d_upstream):

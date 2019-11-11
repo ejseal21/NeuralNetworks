@@ -161,6 +161,7 @@ def conv2nn(imgs, kers, bias, verbose=True):
     - Summing inside your loop can be made simpler compared to conv2.
     - Adding the bias should be easy.
     '''
+    print(imgs.shape)
     batch_sz, n_chans, img_y, img_x = imgs.shape
     n_kers, n_ker_chans, ker_x, ker_y = kers.shape
 
