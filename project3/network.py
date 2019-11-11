@@ -113,7 +113,7 @@ class Network():
             for layer in self.layers:
                 layer.update_weights()
             
-            print(f'We are on iteration: {i+1} of {n_iter}. ')
+            print(f'Iteration: {i+1}/{n_iter}.')
 
             if i == 0:
                 dt = time.time() - sec
@@ -122,14 +122,28 @@ class Network():
                 print("Estimated time to complete:", time_est)
 
             if (i+1) % acc_freq == 0:
-                print(f"Loss History: {self.loss_history}")
+                print("\n-------------LOSS HISTORIES-------------\n")
+                print(f"Loss original: {self.loss_history[0]}")
+                if len(self.loss_history)<3:
+                    print(f"Loss latest: {self.loss_history[-1]}\n\n")
+                else:
+                    print(f"Loss latest three: {self.loss_history[-3:]}\n\n")
+                
+                print("-----------ACCURACIES-----------\n")
                 train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
                 val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
-                print(y_validate)
 
                 self.train_acc_history.append(train_acc)
                 self.validation_acc_history.append(val_acc)
-                print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
+                print(f'  Train acc: {train_acc}, Val acc: {val_acc}\n\n')
+        print("\n\n----------------FINAL OUTPUT----------------")
+        print(f"Loss history last threee: {self.loss_history[-3:]}")
+        train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
+        val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
+
+        self.train_acc_history.append(train_acc)
+        self.validation_acc_history.append(val_acc)
+        print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
 
     def predict(self, inputs):
         '''Classifies novel inputs presented to the network using the current
@@ -157,7 +171,7 @@ class Network():
         for layer in self.layers:
             inputs = layer.forward(inputs)
         
-        print(np.argmax(self.layers[-1].net_in, axis=1))
+        # print(np.argmax(self.layers[-1].net_in, axis=1))
         return np.argmax(self.layers[-1].net_in, axis=1)
     
 
