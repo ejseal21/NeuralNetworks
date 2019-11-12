@@ -109,7 +109,7 @@ class Network():
             cur_labels = y_train[random_indices]
             loss = self.forward(cur_samps, cur_labels)
             self.loss_history.append(loss)
-            self.backward(cur_labels) #was y
+            self.backward(cur_labels) 
             for layer in self.layers:
                 layer.update_weights()
             
@@ -137,13 +137,14 @@ class Network():
                 self.validation_acc_history.append(val_acc)
                 print(f'  Train acc: {train_acc}, Val acc: {val_acc}\n\n')
         print("\n\n----------------FINAL OUTPUT----------------")
-        print(f"Loss history last threee: {self.loss_history[-3:]}")
         train_acc = self.accuracy(x_train, y_train, mini_batch_sz=mini_batch_sz)
         val_acc = self.accuracy(x_validate, y_validate, mini_batch_sz=mini_batch_sz)
 
         self.train_acc_history.append(train_acc)
         self.validation_acc_history.append(val_acc)
         print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
+        print(f"Loss history: {self.loss_history}")
+        print(f"Accuracy history: {self.train_acc_history}")
 
     def predict(self, inputs):
         '''Classifies novel inputs presented to the network using the current
