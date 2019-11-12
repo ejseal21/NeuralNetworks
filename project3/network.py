@@ -10,6 +10,7 @@ import numpy as np
 import layer
 import optimizer
 import filter_ops
+import accelerated_layer
 
 np.random.seed(0)
 
@@ -145,6 +146,12 @@ class Network():
         print(f'  Train acc: {train_acc}, Val acc: {val_acc}')
         print(f"Loss history: {self.loss_history}")
         print(f"Accuracy history: {self.train_acc_history}")
+    
+    def get_train_acc_history(self):
+        return self.train_acc_history
+
+    def get_loss_history(self):
+        return self.loss_history
 
     def predict(self, inputs):
         '''Classifies novel inputs presented to the network using the current
@@ -345,6 +352,59 @@ class ConvNet4(Network):
         self.layers.append(layer.Conv2D(len(self.layers), 'Conv2', n_kers[0], ker_sz[0], n_chans, wt_scale, activation='relu', reg=reg, verbose=verbose))
         # 2) 2x2 max pooling layer
         self.layers.append(layer.MaxPooling2D(len(self.layers),'MaxPool', pooling_sizes[0], pooling_strides[0], 'linear', reg, verbose))
+        # 3) Dense layer
+        self.layers.append(layer.Dense(len(self.layers), 'DenseRelu', dense_interior_units[0], (filter_ops.get_pooling_out_shape(w, pooling_sizes[0], 
+                pooling_strides[0])**2) * n_kers[0] , wt_scale, 'relu', reg, verbose))
+
+        # 4) Dense softmax output layer
+        self.layers.append(layer.Dense(len(self.layers), 'DenseSoftMax', n_classes, self.layers[-1].get_units(), wt_scale, 'softmax', reg, verbose))
+
+        #only the indices of layers that have weights
+        self.wt_layer_inds = [0, 2, 3]
+
+
+class ConvNet4Accel(Network):
+    '''
+    Makes a ConvNet4 network with the following layers: Conv2D -> MaxPooling2D -> Dense -> Dense
+
+    1. Convolution (net-in), Relu (net-act).
+    2. Max pool 2D (net-in), linear (net-act).
+    3. Dense (net-in), Relu (net-act).
+    4. Dense (net-in), soft-max (net-act).
+    '''
+    def __init__(self, input_shape=(3, 32, 32), n_kers=(32,), ker_sz=(7,), dense_interior_units=(100,),
+                 pooling_sizes=(2,), pooling_strides=(2,), n_classes=10, wt_scale=1e-3, reg=0, verbose=True):
+        '''
+        Parameters:
+        -----------
+        input_shape: tuple. Shape of a SINGLE input sample (no mini-batch). By default: (n_chans, img_y, img_x)
+        n_kers: tuple. Number of kernels/units in the 1st convolution layer. Format is (32,), which is a tuple
+            rather than just an int. The reasoning is that if you wanted to create another Conv2D layer, say with 16
+            units, n_kers would then be (32, 16). Thus, this format easily allows us to make the net deeper.
+        ker_sz: tuple. x/y size of each convolution filter. Format is (7,), which means make 7x7 filters in the FIRST
+            Conv2D layer. If we had another Conv2D layer with filters size 5x5, it would be ker_sz=(7,5)
+        dense_interior_units: tuple. Number of hidden units in each dense layer. Same format as above.
+            NOTE: Does NOT include the output layer, which has # units = # classes.
+        pooling_sizes: tuple. Pooling extent in the i-th MaxPooling2D layer.  Same format as above.
+        pooling_strides: tuple. Pooling stride in the i-th MaxPooling2D layer.  Same format as above.
+        n_classes: int. Number of classes in the input. This will become the number of units in the Output Dense layer.
+        wt_scale: float. Global weight scaling to use for all layers with weights
+        reg: float. Regularization strength
+        verbose: bool. Do we want to term network-related debug print outs on?
+            NOTE: This is different than per-layer verbose settings, which are turned manually on below.
+
+        TODO:
+        1. Assemble the layers of the network and add them (in order) to `self.layers`.
+        2. Remember to define self.wt_layer_inds as the list indicies in self.layers that have weights.
+        '''
+
+        super().__init__(reg, verbose)
+
+        n_chans, h, w = input_shape
+        # 1) Input convolutional layer
+        self.layers.append(accelerated_layer.Conv2DAccel(len(self.layers), 'Conv2', n_kers[0], ker_sz[0], n_chans, wt_scale, activation='relu', reg=reg, verbose=verbose))
+        # 2) 2x2 max pooling layer
+        self.layers.append(accelerated_layer.MaxPooling2DAccel(len(self.layers),'MaxPool', pooling_sizes[0], pooling_strides[0], 'linear', reg, verbose))
         # 3) Dense layer
         self.layers.append(layer.Dense(len(self.layers), 'DenseRelu', dense_interior_units[0], (filter_ops.get_pooling_out_shape(w, pooling_sizes[0], 
                 pooling_strides[0])**2) * n_kers[0] , wt_scale, 'relu', reg, verbose))
