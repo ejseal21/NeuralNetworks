@@ -44,7 +44,7 @@ class Optimizer():
 class RMSProp(Optimizer):
     '''Update weights using RMSProp update rule
         '''
-    def __init__(self, lr, beta):
+    def __init__(self, lr=0.001, beta=0.9):
         '''
         Paramters:
         ----------
@@ -68,7 +68,7 @@ class RMSProp(Optimizer):
         Citation: https://towardsdatascience.com/understanding-rmsprop-faster-neural-network-learning-62e116fcf29a
         '''
         self.moving_avg = self.beta * self.moving_avg + (1 - self.beta) * self.d_wts * self.d_wts
-        self.wts = self.wts - (self.lr / sqrt(self.moving_avg)) * self.d_wts
+        self.wts = self.wts - (self.lr / (np.sqrt(self.moving_avg)+.00001)) * self.d_wts
         return self.wts.copy()
 
 class SGD(Optimizer):
