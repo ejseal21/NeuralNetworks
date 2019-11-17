@@ -26,8 +26,6 @@ def preprocess_stl(imgs, labels):
     4) Fix class labeling. Should span 0, 1, ..., 9 NOT 1,2,...10
     '''
     print('imgs.shape',imgs.shape)
-    print(min(labels))
-    print(max(labels))
 
     imgs = imgs.astype(np.float64)
     # imgs = imgs - imgs.mean
