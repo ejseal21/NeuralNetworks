@@ -26,14 +26,14 @@ def preprocess_stl(imgs, labels):
     4) Fix class labeling. Should span 0, 1, ..., 9 NOT 1,2,...10
     '''
     print('imgs.shape',imgs.shape)
-
+    print(min(labels))
 
     imgs = imgs.astype(np.float64)
-    # imgs = imgs - imgs.mean
     imgs = (imgs) / 255.0
     imgs = imgs - np.mean(imgs, axis = 0)
     # imgs = (imgs)/imgs.std()    
     # imgs = np.reshape(imgs, (5000, -1))
+    # imgs = np.reshape(imgs, (5000, 32,32,3))
     labels = labels - 1
 
     return imgs, labels
@@ -83,17 +83,14 @@ def create_splits(data, y, n_train_samps=3500, n_test_samps=500, n_valid_samps=5
 
     #reshape the data into respective sizes and compress last 
     # x_train = data[0:int(len(data)*.7), :].reshape(n_train_samps, data.shape[1])
-    print("data.shape:",data.shape)
-    print("n_train_samps:",n_train_samps)
-    
-    x_train = data[:n_train_samps, :].reshape(n_train_samps, data.shape[1])
+    x_train = data[:n_train_samps, :].reshape(n_train_samps, data.shape[1],data.shape[2],data.shape[3])
     
     y_train = y[:n_train_samps]
-    x_test = data[n_train_samps:n_train_samps + n_test_samps, :].reshape(n_test_samps,data.shape[1])
+    x_test = data[n_train_samps:n_train_samps + n_test_samps, :].reshape(n_test_samps, data.shape[1],data.shape[2],data.shape[3])
     y_test = y[n_train_samps:n_train_samps + n_test_samps]
-    x_val = data[n_train_samps + n_test_samps:n_train_samps + n_test_samps + n_valid_samps, :].reshape(n_valid_samps,data.shape[1])
+    x_val = data[n_train_samps + n_test_samps:n_train_samps + n_test_samps + n_valid_samps, :].reshape(n_valid_samps, data.shape[1],data.shape[2],data.shape[3])
     y_val = y[n_train_samps + n_test_samps:n_train_samps + n_test_samps + n_valid_samps]
-    x_dev = data[n_train_samps + n_test_samps + n_valid_samps:, :].reshape(n_dev_samps,data.shape[1])
+    x_dev = data[n_train_samps + n_test_samps + n_valid_samps:, :].reshape(n_dev_samps, data.shape[1],data.shape[2],data.shape[3])
     y_dev = y[n_train_samps + n_test_samps + n_valid_samps:]
 
 
