@@ -28,10 +28,10 @@ def preprocess_stl(imgs, labels):
     print('imgs.shape',imgs.shape)
 
     imgs = imgs.astype(np.float64)
-    # imgs = imgs - imgs.mean
     imgs = (imgs) / 255.0
     imgs = imgs - np.mean(imgs, axis = 0)
     # imgs = (imgs)/imgs.std()    
+    # imgs = np.reshape(imgs, (5000, -1))
     # imgs = np.reshape(imgs, (5000, 32,32,3))
     labels = labels - 1
 
