@@ -71,11 +71,13 @@ class DeepDream():
                 For example, if filter_inds = [55, 56], at each layer, we only take the mean netAct values
                 across these two cells at every position in the image.
         '''
-        img_tf = np.expand_dims(img_tf, 0)
+        img_tf = tf.expand_dims(img_tf, 0)
         print([layer.output for layer in self.net.layers])
-        net_acts = self.net.forward(img_tf)
+        net_acts = self.net(img_tf)
 
         output = []
+        relevant = tf.gather(self.net, self.filter_inds, )
+        print(relevant)
         if self.filter_inds == []:
             for layer in net_acts:
                 if verbose:
