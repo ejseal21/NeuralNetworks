@@ -71,7 +71,29 @@ class DeepDream():
                 For example, if filter_inds = [55, 56], at each layer, we only take the mean netAct values
                 across these two cells at every position in the image.
         '''
-        pass
+        img_tf = np.expand_dims(img_tf, 0)
+        print([layer.output for layer in self.net.layers])
+        net_acts = self.net.forward(img_tf)
+
+        output = []
+        if self.filter_inds == []:
+            for layer in net_acts:
+                if verbose:
+                    print("Processing net_act values for", layer.name)
+                tmp = 0
+                for act in layer:
+                    tmp += act
+                output.append(tmp/len(layer))
+
+        else:
+            for layer in net_acts:
+                if verbose:
+                    print("Processing net_act values for", layer.name)
+                tmp = 0
+                for i in self.filter_inds:
+                    tmp += layer[i]
+                output.append(tmp/len(self.filter_inds))
+
 
     def image_gradient(self, img_tf, eps=1e-8, normalized=True, verbose=False):
         '''Computes the (normalized) gradients for each selected network layer with respect to
