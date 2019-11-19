@@ -72,30 +72,21 @@ class DeepDream():
                 across these two cells at every position in the image.
         '''
         img_tf = tf.expand_dims(img_tf, 0)
-        print([layer.output for layer in self.net.layers])
         net_acts = self.net(img_tf)
-
         output = []
-        relevant = tf.gather(self.net, self.filter_inds, )
-        print(relevant)
+        # relevant_layers = tf.gather(net_acts, self.selected_layer_inds)
         if self.filter_inds == []:
-            for layer in net_acts:
+            for val in self.selected_layer_inds:
+                output.append(tf.reduce_mean(net_acts[val]))
                 if verbose:
-                    print("Processing net_act values for", layer.name)
-                tmp = 0
-                for act in layer:
-                    tmp += act
-                output.append(tmp/len(layer))
-
+                    print("Processing net_act values for", self.all_layer_names[val])
         else:
-            for layer in net_acts:
+            print('filter values are present')
+            for val in self.selected_layer_inds:
+                output.append(tf.reduce_mean(tf.gather(net_acts[val], self.filter_inds, axis=3)))
                 if verbose:
-                    print("Processing net_act values for", layer.name)
-                tmp = 0
-                for i in self.filter_inds:
-                    tmp += layer[i]
-                output.append(tmp/len(self.filter_inds))
-
+                    print("Processing net_act values for", self.all_layer_names[val])
+        return output
 
     def image_gradient(self, img_tf, eps=1e-8, normalized=True, verbose=False):
         '''Computes the (normalized) gradients for each selected network layer with respect to
@@ -122,7 +113,23 @@ class DeepDream():
         3) If we're normalizing, divide gradient by standard deviation (see notebook for equation).
             https://www.tensorflow.org/api_docs/python/tf/math
         '''
-        pass
+        if img_tf.shape[0] != 1:
+            img_tf = tf.expand_dims(img_tf, 0)
+ 
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(img_tf)
+            net_acts = self.net(img_tf)
+        
+        gradients = []
+        for i in self.selected_layer_inds:
+            grad = tape.gradient(net_acts[i], img_tf)
+        
+            if normalized:
+                gradients.append(grad / tf.math.sqrt((tf.reduce_mean(tf.math.square(grad)))) + eps)
+            else:
+                gradients.append(grad)
+        return gradients
+        
 
     def gradient_ascent(self, img_tf, n_iter=10, step_sz=0.01, clip_low=0, clip_high=1, verbose=False):
         '''Performs gradient ascent on the input img `img_tf`.
@@ -146,7 +153,15 @@ class DeepDream():
         -----------
         img_tf: tf.Variable. shape=(img_y, img_x, n_chans). Input image modified via gradient ascent.
         '''
-        pass
+        #may need to call forward here
+        img_tf = tf.Variable(tf.expand_dims(img_tf, 0))
+        for i in range(n_iter):
+            print("iteration",i)
+            grads = self.image_gradient(img_tf, verbose=verbose)
+            for grad in grads:
+                tf.compat.v1.assign_add(img_tf, step_sz * grad)
+                # img_tf.assign_add(step_sz * grad)
+        return tf.squeeze(img_tf)
 
     def gradient_ascent_multiscale(self, img_tf, n_scales=4, scale_factor=1.3, n_iter=10, step_sz=0.01,
                                    clip_low=-1, clip_high=2, verbose=False):
@@ -195,4 +210,9 @@ class DeepDream():
         3) Convert to ndarray
         4) Normalize to [0, 1] based on the dynamic range of the image (the CS 251 way).
         '''
-        pass
+        tf.clip_by_value(tf_img, 0, 1)
+        tf_img = tf.squeeze(tf_img)
+        tf_img.numpy()
+        tf_img = (tf_img - np.min(tf_img)) / np.max(tf_img)
+        return tf_img
+        
