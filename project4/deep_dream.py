@@ -156,11 +156,12 @@ class DeepDream():
         #may need to call forward here
         img_tf = tf.Variable(tf.expand_dims(img_tf, 0))
         for i in range(n_iter):
-            print("iteration",i)
+            if verbose:
+                print("iteration",i)
             grads = self.image_gradient(img_tf, verbose=verbose)
             for grad in grads:
                 tf.compat.v1.assign_add(img_tf, step_sz * grad)
-                # img_tf.assign_add(step_sz * grad)
+        tf.clip_by_value(img_tf, clip_low, clip_high)
         return tf.squeeze(img_tf)
 
     def gradient_ascent_multiscale(self, img_tf, n_scales=4, scale_factor=1.3, n_iter=10, step_sz=0.01,
@@ -191,7 +192,18 @@ class DeepDream():
         -----------
         img_tf: tf.Variable. shape=(img_y, img_x, n_chans). Input image modified via gradient ascent.
         '''
-        pass
+
+        self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, clip_low=clip_low, clip_high=clip_high, verbose=verbose)
+        for n in range(n_scales):
+            shape = img_tf.shape
+            print('shape',shape)
+            newshape = []
+            for i in range(len(shape)):
+                newshape.append(shape[i] * scale_factor)
+            img_tf = tf.Variable(tf.image.resize(img_tf, newshape))
+            self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, clip_low=clip_low, clip_high=clip_high, verbose=verbose)
+            
+
 
     def tf2array(self, tf_img):
         '''Converts a tf.Variable -> ndarray for plotting via matplotlib.
