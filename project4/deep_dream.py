@@ -153,19 +153,30 @@ class DeepDream():
         -----------
         img_tf: tf.Variable. shape=(img_y, img_x, n_chans). Input image modified via gradient ascent.
         '''
-        #may need to call forward here
-        img_tf = tf.Variable(tf.expand_dims(img_tf, 0))
-        for i in range(n_iter):
-            if verbose:
-                print("iteration",i)
-            grads = self.image_gradient(img_tf, verbose=verbose)
-            for grad in grads:
-                tf.compat.v1.assign_add(img_tf, step_sz * grad)
-        tf.clip_by_value(img_tf, clip_low, clip_high)
-        return tf.squeeze(img_tf)
+        if img_tf.shape[0] != 1:
+            img_tf = tf.Variable(tf.expand_dims(img_tf, 0))
+        else:
+            img_tf = tf.Variable(img_tf)
+        for i in range (n_iter):
+            grads = self.image_gradient(img_tf)
+            for j in range(len(self.selected_layer_inds)):
+                img_tf = tf.compat.v1.assign_add(img_tf, grads[j] * step_sz)
+        img_tf = tf.clip_by_value(img_tf, clip_low, clip_high)
+
+        return img_tf
+
+        # for i in range(n_iter):
+        #     if verbose:
+        #         print("iteration",i)
+        #     grads = self.image_gradient(img_tf, verbose=verbose)
+            
+        #     for grad in grads:
+        #         tf.compat.v1.assign_add(img_tf, step_sz * grad)
+        # tf.clip_by_value(img_tf, clip_low, clip_high)
+        # return tf.squeeze(img_tf)
 
     def gradient_ascent_multiscale(self, img_tf, n_scales=4, scale_factor=1.3, n_iter=10, step_sz=0.01,
-                                   clip_low=-1, clip_high=2, verbose=False):
+                                   clip_low=-1, clip_high=2, verbose=True):
         '''Multi-scale version of gradient ascent algorithm.
         Runs gradient ascent on the input image `img_tf`, `n_iter` times, with gradient step size `step_sz`.
         Then we multiplicatively enlarge the image by a factor of `scale_factor` and run gradient
@@ -192,17 +203,17 @@ class DeepDream():
         -----------
         img_tf: tf.Variable. shape=(img_y, img_x, n_chans). Input image modified via gradient ascent.
         '''
-
-        self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, clip_low=clip_low, clip_high=clip_high, verbose=verbose)
+        shape = tf.cast(tf.shape(img_tf)[:-1], tf.float32)
+        # self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, clip_low=clip_low, clip_high=clip_high, verbose=verbose)
         for n in range(n_scales):
-            shape = img_tf.shape
-            print('shape',shape)
-            newshape = []
-            for i in range(len(shape)):
-                newshape.append(shape[i] * scale_factor)
-            img_tf = tf.Variable(tf.image.resize(img_tf, newshape))
-            self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, clip_low=clip_low, clip_high=clip_high, verbose=verbose)
-            
+            if verbose:
+                print("scale",n)
+            new_shape = tf.cast(shape*(scale_factor**n), tf.int32)
+            img_tf = self.gradient_ascent(img_tf, n_iter=n_iter, step_sz=step_sz, verbose=verbose)
+            img_tf = tf.image.resize(img_tf, new_shape)
+            img_tf = tf.Variable(img_tf)
+            img_tf = tf.clip_by_value(img_tf, clip_low, clip_high)
+        return img_tf
 
 
     def tf2array(self, tf_img):
@@ -225,6 +236,6 @@ class DeepDream():
         tf.clip_by_value(tf_img, 0, 1)
         tf_img = tf.squeeze(tf_img)
         tf_img.numpy()
-        tf_img = (tf_img - np.min(tf_img)) / np.max(tf_img)
+        tf_img = (tf_img - np.min(tf_img)) / (np.max(tf_img)-np.min(tf_img))
         return tf_img
         
