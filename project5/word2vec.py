@@ -321,7 +321,10 @@ class Skipgram(network.Network):
         '''
         if word not in word2ind:
             raise ValueError(f'{word} not in word dictionary!')
-        pass
+        
+        return self.get_layers[0].get_wts()[word2vec[word]]
+    
+        
 
     def get_all_word_vectors(self, word2ind, wordList):
         '''Get all word embedding vectors for the list of words `wordList` from the trained network
@@ -336,4 +339,7 @@ class Skipgram(network.Network):
            ndarray. Word embedding vectors. shape=(len(wordList), embedding_sz)
             This is the wt vectors from the 1st net layer at the index specified by each word's int-code.
         '''
-        pass
+        output = []
+        for i in range(len(wordList)):
+            output.append(self.get_word_vector(word2ind, wordList[i]))
+        return np.asarray(output)
