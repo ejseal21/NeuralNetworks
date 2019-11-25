@@ -147,7 +147,7 @@ class Layer():
         '''
         if self.activation == 'softmax':
             return self.cross_entropy(y)
-        elif self.activaiton == 'softmax_embedding':
+        elif self.activation == 'softmax_embedding':
             return self.skipgram(y)
 
     def cross_entropy(self, y, reg=0):
@@ -352,11 +352,6 @@ class Layer():
         -----------
         d_net_in: gradient that takes us from current layer's activation function to netIn.
             shape = (shape of self.net_in)
-
-        TODO:
-        1. Implement gradient for linear
-        2. Implement gradient for relu
-        2. Implement gradient for softmax
         '''
         if self.activation == 'relu':
             d_net_in = d_upstream * np.where(self.net_in < 0, 0, 1)
@@ -366,7 +361,8 @@ class Layer():
             one_hot = self.one_hot(y, self.net_act.shape[1])
             d_net_in = d_upstream * (self.net_act * (one_hot-self.net_act))
         elif self.activation == 'softmax_embedding':
-            d_net_in = y.shape[0] * self.net_act - np.where(y > 0, 1, 0)
+            one_hot = self.one_hot(y, self.net_act.shape[1])
+            d_net_in = y.shape[0] * self.net_act - one_hot
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in

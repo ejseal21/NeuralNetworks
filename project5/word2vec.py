@@ -253,8 +253,8 @@ class Skipgram(network.Network):
         super().__init__(reg, verbose)
 
         _, vocab_sz = input_shape
-        self.layers.append(layer.Dense(1, 'dense linear', dense_interior_units, vocab_sz, wt_scale=wt_scale, activation='linear', reg=reg))
-        self.layers.append(layer.Dense(1, 'dense softmax', dense_interior_units, vocab_sz, wt_scale=wt_scale, activation='softmax_embedding', reg=reg))
+        self.layers.append(layer.Dense(1, 'dense linear', dense_interior_units[0], vocab_sz, wt_scale=wt_scale, activation='linear', reg=reg))
+        self.layers.append(layer.Dense(1, 'dense softmax', dense_interior_units[0], vocab_sz, wt_scale=wt_scale, activation='softmax_embedding', reg=reg))
         
 
     def fit(self, targets_train, contexts_train, n_epochs=10, print_every=100):
