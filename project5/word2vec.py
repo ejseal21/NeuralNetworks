@@ -135,7 +135,10 @@ def make_ind2word_mapping(vocab):
     -----------
     dictionary with key,value pairs: int,string
     '''
-    pass
+    dictionary = {}
+    for i in range(len(vocab)):
+        dictionary[i] = vocab[i]
+    return dictionary
 
 
 def make_target_context_word_lists(corpus, word2ind, vocab_sz, context_win_sz=2):
