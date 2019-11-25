@@ -186,7 +186,28 @@ def make_target_context_word_lists(corpus, word2ind, vocab_sz, context_win_sz=2)
                            array([1, 2, 4, 5]),...]
 
     '''
-    pass
+
+    target_words_onehot = []
+    context_words_int = []
+    for i in range(len(corpus)):
+        for j in range(len(corpus[i])):
+            onehot = np.zeros((1,vocab_sz))
+            onehot[0, word2ind[corpus[i][j]]] = 1.0
+            target_words_onehot.append(onehot)
+            context_int = []
+            for k in range(1,context_win_sz+1):
+                if j-k >= 0 and j+k <= len(corpus[i])-1:
+                    context_int.append(j-k)
+                    context_int.append(j+k)
+                else:
+                    if j-k>=0:
+                        context_int.append(j-k)
+                    elif j+k <= len(corpus[i])-1:
+                        context_int.append(j+k)
+            context_int = np.asarray(context_int)
+            np.sort(context_int)
+            context_words_int.append(context_int)
+    return target_words_onehot, context_words_int
 
 
 class Skipgram(network.Network):
@@ -300,7 +321,10 @@ class Skipgram(network.Network):
         '''
         if word not in word2ind:
             raise ValueError(f'{word} not in word dictionary!')
-        pass
+        
+        return self.get_layers[0].get_wts()[word2vec[word]]
+    
+        
 
     def get_all_word_vectors(self, word2ind, wordList):
         '''Get all word embedding vectors for the list of words `wordList` from the trained network
@@ -315,4 +339,7 @@ class Skipgram(network.Network):
            ndarray. Word embedding vectors. shape=(len(wordList), embedding_sz)
             This is the wt vectors from the 1st net layer at the index specified by each word's int-code.
         '''
-        pass
+        output = []
+        for i in range(len(wordList)):
+            output.append(self.get_word_vector(word2ind, wordList[i]))
+        return np.asarray(output)
