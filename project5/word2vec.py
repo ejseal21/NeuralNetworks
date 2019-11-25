@@ -75,8 +75,13 @@ def make_corpus(data, min_sent_size=5):
     - Tokenize the sentence into individual word strings (via tokenenize_words())
     - Only add a list of words to the corpus if the length is at least `min_sent_size`.
     '''
-    pass
-
+    corpus = data.split(".")
+    for i in range(len(corpus)):
+        corpus[i] = tokenize_words(corpus[i])
+        if len(corpus[i]) < min_sent_size:
+            corpus.remove(corpus[i])
+            i -= 1
+    return corpus
 
 def find_unique_words(corpus):
     '''Define the vocabulary in the corpus (unique words)
