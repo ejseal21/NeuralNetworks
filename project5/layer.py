@@ -128,23 +128,6 @@ class Layer():
         net_in_max = np.max(self.net_in, keepdims=True)
         self.net_act = np.exp(self.net_in - net_in_max) / np.sum(np.exp(self.net_in - net_in_max), axis=1, keepdims=True)
 
-    def skipgram(self, y):
-        '''Skipgram activation function. See notebook for formula
-        
-        Parameters:
-        -----------
-        y: ndarray. int-coded context word indices,
-            shape=(context_sz,)
-        '''
-        c = y.shape[0]
-        left_term = np.log(np.sum(np.exp(self.net_in)))
-        right_term = np.sum(self.net_in[0, y])
-
-        loss = c * left_term - right_term
-
-        return loss
-
-
     def loss(self, y, reg=0):
         '''Computes the loss for this layer. Only should be called on the output
         layer. We assume here that the output layer will have a softmax activation
@@ -163,8 +146,9 @@ class Layer():
         loss: float. Mean (cross-entropy) loss over the mini-batch.
         '''
         if self.activation == 'softmax':
-            # compute cross-entropy loss
             return self.cross_entropy(y)
+        elif self.activaiton == 'softmax_embedding':
+            return self.skipgram(y)
 
     def cross_entropy(self, y, reg=0):
         '''Computes UNREGULARIZED cross-entropy loss.
@@ -182,7 +166,23 @@ class Layer():
         '''
         correct_acts = self.net_act[np.arange(self.net_act.shape[0]), y]
         return -(1/y.shape[0]) * np.sum(np.log(correct_acts))
+
+    def skipgram(self, y):
+        '''Skipgram activation function. See notebook for formula
         
+        Parameters:
+        -----------
+        y: ndarray. int-coded context word indices,
+            shape=(context_sz,)
+        '''
+        c = y.shape[0]
+        left_term = np.log(np.sum(np.exp(self.net_in)))
+        right_term = np.sum(self.net_in[0, y])
+
+        loss = c * left_term - right_term
+
+        return loss
+    
     def forward(self, inputs):
         '''Computes the forward pass through this particular layer.
 
@@ -255,6 +255,8 @@ class Layer():
 
         if self.activation == 'softmax':
             dlast_net_act = -1/(len(net_act_copy) * net_act_copy)
+        elif self.activaiton == 'softmax_embedding':
+            self.net_act.copy()
         else:
             raise RuntimeError('Output layer isnt softmax, so how to compute dlast_net_act is unspecified.')
 
@@ -327,9 +329,7 @@ class Layer():
             self.linear()
         elif self.activation == "relu":
             self.relu()
-        elif self.activation == "softmax":
-            self.softmax()
-        elif self.activaiton == "softmax_emebedding":
+        elif self.activation == "softmax" or self.activation == "softmax_embedding":
             self.softmax()
         else:
             raise Exception("THAT ACTIVATION IS NOT ALLOWED, CHIEF")
@@ -365,6 +365,8 @@ class Layer():
         elif self.activation == 'softmax':
             one_hot = self.one_hot(y, self.net_act.shape[1])
             d_net_in = d_upstream * (self.net_act * (one_hot-self.net_act))
+        elif self.activation == 'softmax_embedding':
+            d_net_in = y.shape[0] * self.net_act - np.where(y > 0, 1, 0)
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
         return d_net_in
