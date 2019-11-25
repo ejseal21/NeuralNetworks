@@ -97,7 +97,12 @@ def find_unique_words(corpus):
     TODO:
     - Find and return a list of the unique words in the corpus.
     '''
-    pass
+    unique_words = []
+    for sentence in corpus:
+        for word in sentence:
+            if word not in unique_words:
+                unique_words.append(word)
+    return unique_words
 
 
 def make_word2ind_mapping(vocab):
