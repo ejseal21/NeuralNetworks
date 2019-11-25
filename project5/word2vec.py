@@ -253,8 +253,9 @@ class Skipgram(network.Network):
         super().__init__(reg, verbose)
 
         _, vocab_sz = input_shape
-
-        pass
+        self.layers.append(layer.Dense(1, 'dense linear', dense_interior_units, vocab_sz, wt_scale=wt_scale, activation='linear', reg=reg))
+        self.layers.append(layer.Dense(1, 'dense softmax', dense_interior_units, vocab_sz, wt_scale=wt_scale, activation='softmax_embedding', reg=reg))
+        
 
     def fit(self, targets_train, contexts_train, n_epochs=10, print_every=100):
         '''Trains the Skip-gram neural network on target and context word data
@@ -284,18 +285,25 @@ class Skipgram(network.Network):
         add be the MEAN loss value across all iterations in one epoch.
         - Remove support for accuracy/validation checking. This isn't needed for basic Skip-gram.
         '''
-
+        print("targets_train:", targets_train)
         iter_per_epoch = len(targets_train)
         n_iter = n_epochs * iter_per_epoch
-
+        
+        loss_history_to_avg = []
         print(f'Starting to train ({n_epochs} epochs)...')
-
-        # FILL IN CODE HERE
-
-        # Put this in your traing loop
-        if (e+1) % print_every == 0:
-            print(f'Finished epoch {e}/{n_epochs}. Epoch Loss: {loss/iter_per_epoch:.3f}')
-
+        for i in range(n_iter):
+            x = targets_train[i]
+            y = contexts_train[i]
+            loss = self.forward(x, y)
+            loss_history_to_avg.append(loss)
+            self.backward(y)
+            for layer in self.layers:
+                layer.update_weights()
+            if i % iter_per_epoch == 0:
+                loss = sum(loss_history_to_avg)/len(loss_history_to_avg)
+                self.loss_history.append(loss)
+            if (e+1) % print_every == 0:
+                print(f'Finished epoch {e}/{n_epochs}. Epoch Loss: {loss/iter_per_epoch:.3f}')
         return self.loss_history
 
     def get_word_vector(self, word2ind, word):
