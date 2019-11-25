@@ -117,7 +117,10 @@ def make_word2ind_mapping(vocab):
     -----------
     dictionary with key,value pairs: string,int
     '''
-    pass
+    dictionary = {}
+    for i in range(len(vocab)):
+        dictionary[vocab[i]] = i
+    return dictionary
 
 
 def make_ind2word_mapping(vocab):
