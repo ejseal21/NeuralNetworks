@@ -128,6 +128,22 @@ class Layer():
         net_in_max = np.max(self.net_in, keepdims=True)
         self.net_act = np.exp(self.net_in - net_in_max) / np.sum(np.exp(self.net_in - net_in_max), axis=1, keepdims=True)
 
+    def skipgram(self, y):
+        '''Skipgram activation function. See notebook for formula
+        
+        Parameters:
+        -----------
+        y: ndarray. int-coded context word indices,
+            shape=(context_sz,)
+        '''
+        c = y.shape[0]
+        left_term = np.log(np.sum(np.exp(self.net_in)))
+        right_term = np.sum(self.net_in[0, y])
+
+        loss = c * left_term - right_term
+
+        return loss
+
 
     def loss(self, y, reg=0):
         '''Computes the loss for this layer. Only should be called on the output
@@ -312,6 +328,8 @@ class Layer():
         elif self.activation == "relu":
             self.relu()
         elif self.activation == "softmax":
+            self.softmax()
+        elif self.activaiton == "softmax_emebedding":
             self.softmax()
         else:
             raise Exception("THAT ACTIVATION IS NOT ALLOWED, CHIEF")
