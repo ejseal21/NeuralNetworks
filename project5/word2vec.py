@@ -251,11 +251,12 @@ class Skipgram(network.Network):
         3. Remember to define self.wt_layer_inds as the list indicies in self.layers that have weights.
         '''
         super().__init__(reg, verbose)
+        self.embedding_sz = dense_interior_units[0]
 
         _, vocab_sz = input_shape
-        self.layers.append(layer.Dense(1, 'dense linear', dense_interior_units[0], vocab_sz, wt_scale=wt_scale, activation='linear', reg=reg))
-        self.layers.append(layer.Dense(1, 'dense softmax', dense_interior_units[0], vocab_sz, wt_scale=wt_scale, activation='softmax_embedding', reg=reg))
-        
+        self.layers.append(layer.Dense(0, 'dense linear', dense_interior_units[0], vocab_sz, wt_scale, 'linear', reg))
+        self.layers.append(layer.Dense(1, 'dense softmax', n_classes, self.layers[0].wts.shape[1], wt_scale, 'softmax_embedding', reg))
+        self.wt_layer_inds = [0, 1]
 
     def fit(self, targets_train, contexts_train, n_epochs=10, print_every=100):
         '''Trains the Skip-gram neural network on target and context word data

@@ -79,7 +79,6 @@ class Layer():
 
         one_hot_out = np.zeros((len(y), num_classes))
         one_hot_out[np.arange(len(y)), y] = 1
-
         return one_hot_out.astype(int)
 
     def linear(self):
@@ -255,8 +254,8 @@ class Layer():
 
         if self.activation == 'softmax':
             dlast_net_act = -1/(len(net_act_copy) * net_act_copy)
-        elif self.activaiton == 'softmax_embedding':
-            self.net_act.copy()
+        elif self.activation == 'softmax_embedding':
+            dlast_net_act = self.net_act.copy()
         else:
             raise RuntimeError('Output layer isnt softmax, so how to compute dlast_net_act is unspecified.')
 
@@ -361,7 +360,7 @@ class Layer():
             one_hot = self.one_hot(y, self.net_act.shape[1])
             d_net_in = d_upstream * (self.net_act * (one_hot-self.net_act))
         elif self.activation == 'softmax_embedding':
-            one_hot = self.one_hot(y, self.net_act.shape[1])
+            one_hot = np.sum(self.one_hot(y, self.net_act.shape[1]), axis=0)
             d_net_in = y.shape[0] * self.net_act - one_hot
         else:
             raise ValueError('Error! Unknown activation function ', self.activation)
