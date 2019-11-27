@@ -191,10 +191,14 @@ def make_target_context_word_lists(corpus, word2ind, vocab_sz, context_win_sz=2)
     context_words_int = []
     for i in range(len(corpus)):
         for j in range(len(corpus[i])):
+            #generate onehot vec
             onehot = np.zeros((1,vocab_sz))
+            #set the right index to 1
             onehot[0, word2ind[corpus[i][j]]] = 1.0
+            #add that vector to the target words
             target_words_onehot.append(onehot)
             context_int = []
+            #only append if the window is in the right place
             for k in range(1,context_win_sz+1):
                 if j-k >= 0 and j+k <= len(corpus[i])-1:
                     context_int.append(j-k)
@@ -204,8 +208,11 @@ def make_target_context_word_lists(corpus, word2ind, vocab_sz, context_win_sz=2)
                         context_int.append(j-k)
                     elif j+k <= len(corpus[i])-1:
                         context_int.append(j+k)
+            #convert to np array
             context_int = np.asarray(context_int)
+            #quicksort min to max
             np.sort(context_int)
+            #ship out the context words int into the larger pool
             context_words_int.append(context_int)
     return target_words_onehot, context_words_int
 
@@ -286,15 +293,16 @@ class Skipgram(network.Network):
         add be the MEAN loss value across all iterations in one epoch.
         - Remove support for accuracy/validation checking. This isn't needed for basic Skip-gram.
         '''
-        print("targets_train:", targets_train)
+        print("targets_train:", targets_train[0].shape)
         iter_per_epoch = len(targets_train)
         n_iter = n_epochs * iter_per_epoch
         
         loss_history_to_avg = []
         print(f'Starting to train ({n_epochs} epochs)...')
         for i in range(n_iter):
-            x = targets_train[i]
-            y = contexts_train[i]
+            e = (i + 1.0) / iter_per_epoch #current epoch
+            x = targets_train[i % iter_per_epoch]
+            y = contexts_train[i % iter_per_epoch]
             loss = self.forward(x, y)
             loss_history_to_avg.append(loss)
             self.backward(y)
@@ -303,6 +311,7 @@ class Skipgram(network.Network):
             if i % iter_per_epoch == 0:
                 loss = sum(loss_history_to_avg)/len(loss_history_to_avg)
                 self.loss_history.append(loss)
+                loss_history_to_avg = []
             if (e+1) % print_every == 0:
                 print(f'Finished epoch {e}/{n_epochs}. Epoch Loss: {loss/iter_per_epoch:.3f}')
         return self.loss_history
@@ -323,7 +332,7 @@ class Skipgram(network.Network):
         if word not in word2ind:
             raise ValueError(f'{word} not in word dictionary!')
         
-        return self.get_layers[0].get_wts()[word2vec[word]]
+        return self.layers[0].get_wts()[word2ind[word]]
     
         
 

@@ -6,7 +6,7 @@ Project 3: Convolutional Neural Networks
 '''
 import numpy as np
 
-import im2col_cython
+# import im2col_cython
 import layer
 import filter_ops
 
