@@ -313,7 +313,7 @@ class Skipgram(network.Network):
                 self.loss_history.append(loss)
                 loss_history_to_avg = []
             if (e+1) % print_every == 0:
-                print(f'Finished epoch {e}/{n_epochs}. Epoch Loss: {loss/iter_per_epoch:.3f}')
+                print(f'Finished epoch {e}/{n_epochs}. Epoch Loss: {sum(loss_history_to_avg[-iter_per_epoch:])/iter_per_epoch:.3f}')
         return self.loss_history
 
     def get_word_vector(self, word2ind, word):
