@@ -64,6 +64,10 @@ class SOM:
         self.init_sigma = init_sigma
         self.verbose = verbose
 
+        weights = np.random.normal(loc=0, scale=1, size=(map_sz, map_sz, n_features))
+        # for i in range(weights.shape[0]):
+        #     weights[i] = weights[i]/max(weights[i])
+
         pass
 
     def get_wts(self):
