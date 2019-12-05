@@ -180,7 +180,9 @@ class SOM:
                 cur_dist = np.linalg.norm(input_vector - self.wts[i, j]) 
                 if cur_dist < min_dist:
                     min_dist = cur_dist
-                    cur_ind = (i,j) 
+                    cur_ind = (i,j)
+        if cur_ind == (-1, -1):
+            print("your indices in get_bmu are (-1, -1), so you probably have something messed up.")
         return cur_ind
 
     def update_wts(self, t, input_vector, bmu_rc):
@@ -251,6 +253,12 @@ class SOM:
         TODO:
         - Compute and return the array of closest wts vectors to each of the input vectors.
         '''
+        indices = []
         for sample in data:
-            for n
+            indices.append(self.get_bmu(sample))
         
+        nearest_wts = np.zeros(data.shape)
+        for i in range(nearest_wts.shape[0]):
+            nearest_wts[i, :] = self.wts[indices[i]]
+        
+        return nearest_wts
