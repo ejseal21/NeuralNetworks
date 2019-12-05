@@ -63,12 +63,16 @@ class SOM:
         self.init_lr = init_lr
         self.init_sigma = init_sigma
         self.verbose = verbose
+        self.map_sz = map_sz
 
-        weights = np.random.normal(loc=0, scale=1, size=(map_sz, map_sz, n_features))
-        # for i in range(weights.shape[0]):
-        #     weights[i] = weights[i]/max(weights[i])
+        self.wts = np.random.normal(loc=0, scale=1, size=(map_sz, map_sz, n_features))
+        self.wts = self.wts 
+        for i in range(self.wts.shape[0]):
+            for j in range(self.wts.shape[1]):
+                self.wts[i, j] = self.wts[i, j] / np.linalg.norm(self.wts[i, j])
+        
+        self.bmu_neighborhood_x, self.bmu_neighborhood_y = np.meshgrid(np.arange(map_sz), np.arange(map_sz))
 
-        pass
 
     def get_wts(self):
         '''Returns a COPY of the weight vector.
@@ -92,7 +96,7 @@ class SOM:
         TODO:
         - See notebook for decay equation to implement
         '''
-        pass
+        return param * np.exp(-t/(self.max_iter/2))
 
     def gaussian(self, bmu_rc, sigma, lr):
         '''Generates a normalized 2D Gaussian, weighted by the the current learning rate, centered
@@ -115,7 +119,14 @@ class SOM:
         - Evaluate a Gaussian on a 2D grid with shape=(map_sz, map_sz) centered on `bmu_rc`.
         - Normalize so that the maximum value in the kernel is `lr`
         '''
-        pass
+
+        gaussian = np.zeros((self.map_sz, self.map_sz))
+        for i in range(self.map_sz):
+            for j in range(self.map_sz):
+                gaussian[i, j] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
+        # gaussian = gaussian / lr
+        return gaussian
+        
 
     def fit(self, train_data):
         '''Main training method
@@ -133,10 +144,16 @@ class SOM:
         pass thru each training sample.
         '''
 
+        copy = train_data.copy()
+        copy = np.random.shuffle(copy)
+
         if self.verbose:
             print(f'Starting training...')
 
         # TRAINING CODE HERE
+        for i in range(self.max_iter):
+            vec = copy[i]
+            self.get_bmu(vec)
 
         if self.verbose:
             print(f'Finished training.')
@@ -147,7 +164,7 @@ class SOM:
 
         Parameters:
         ----------
-        input_vector: ndarray. shape=(n_features,). One data sample vector.
+        input_vector: ndarray. shape=(features,). One data sample vector.
 
         Returns:
         ----------
@@ -156,7 +173,15 @@ class SOM:
         TODO:
         - Find the unit with the closest weights to the data vector. Return its subscripted position.
         '''
-        pass
+        min_dist = np.Inf
+        cur_ind = (-1, -1)
+        for i in range(self.map_sz):
+            for j in range(self.map_sz):
+                cur_dist = np.linalg.norm(input_vector - self.wts[i, j]) 
+                if cur_dist < min_dist:
+                    min_dist = cur_dist
+                    cur_ind = (i,j) 
+        return cur_ind
 
     def update_wts(self, t, input_vector, bmu_rc):
         '''Applies the SOM update rule to change the BMU (and neighboring units') weights,
@@ -226,4 +251,6 @@ class SOM:
         TODO:
         - Compute and return the array of closest wts vectors to each of the input vectors.
         '''
-        pass
+        for sample in data:
+            for n
+        
