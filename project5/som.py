@@ -124,7 +124,6 @@ class SOM:
         for i in range(self.map_sz):
             for j in range(self.map_sz):
                 gaussian[i, j] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
-        # gaussian = gaussian / lr
         return gaussian
         
 
@@ -204,7 +203,13 @@ class SOM:
         - Decay the learning rate and Gaussian neighborhood standard deviation parameters.
         - Apply the SOM weight update rule. See notebook for equation.
         '''
-        pass
+        lr = self.compute_decayed_param(t, self.init_lr)
+        sigma = self.compute_decayed_param(t, self.init_sigma)
+        gauss = self.gaussian(bmu_rc, sigma, lr)
+
+        for i in range(self.wts.shape[0]):
+            for j in range(self.wts.shape[1]):
+                self.wts[i, j] = self.wts[i, j] +  gauss[i, j] * (input_vector - self.wts[i, j])
 
     def error(self, data):
         '''Computes the quantization error: total error incurred by approximating all data vectors
@@ -237,7 +242,19 @@ class SOM:
         - Normalize it so that the dynamic range of values span [0, 1]
 
         '''
-        pass
+        u = np.zeros((self.map_sz, self.map_sz))
+        padded_wts = np.pad(self.wts, 1)
+        for i in range(self.map_sz):#1, padded_wts.shape[0] - 1):
+            for j in range(self.map_sz):#1, padded_wts.shape[1] - 1):
+                local_sum = 0
+                for k in range(-1, 2):
+                    for l in range(-1, 2):
+                        if k != 0 or l != 0:
+                            local_sum += np.linalg.norm(padded_wts[i, j] - padded_wts[i + l, j + k])
+                u[i, j] = local_sum
+        
+        return u / np.max(u)
+
 
     def get_nearest_wts(self, data):
         '''Find the nearest SOM wt vector to each of data sample vectors.
