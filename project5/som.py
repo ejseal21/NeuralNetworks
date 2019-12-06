@@ -66,7 +66,7 @@ class SOM:
         self.map_sz = map_sz
 
         self.wts = np.random.normal(loc=0, scale=1, size=(map_sz, map_sz, n_features))
-        self.wts = self.wts 
+        self.wts = self.wts
         for i in range(self.wts.shape[0]):
             for j in range(self.wts.shape[1]):
                 self.wts[i, j] = self.wts[i, j] / np.linalg.norm(self.wts[i, j])
@@ -142,19 +142,21 @@ class SOM:
         NOTE: If self.max_iter > N, and the current iter > N, cycle back around and do another
         pass thru each training sample.
         '''
-
         copy = train_data.copy()
-        copy = np.random.shuffle(copy)
+        np.random.shuffle(copy)
 
         if self.verbose:
             print(f'Starting training...')
 
         # TRAINING CODE HERE
+        j = 0
         for i in range(self.max_iter):
-            vec = copy[i]
+            vec = copy[i + j]
             bmu = self.get_bmu(vec)
             self.update_wts(i, vec, bmu)
-            
+            if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
+                #sends indexing back to the start, but lets i stay at its current value
+                j -= train_data.shape[0]
         if self.verbose:
             print(f'Finished training.')
 
@@ -180,7 +182,7 @@ class SOM:
                 cur_dist = np.linalg.norm(input_vector - self.wts[i, j]) 
                 if cur_dist < min_dist:
                     min_dist = cur_dist
-                    cur_ind = (i,j)
+                    cur_ind = (i, j)
         if cur_ind == (-1, -1):
             print("your indices in get_bmu are (-1, -1), so you probably have something messed up.")
         return cur_ind
@@ -228,7 +230,11 @@ class SOM:
         - Progressively average the Euclidean distance between each data vector
         and the BMU weight vector.
         '''
-        pass
+        nearest_wts = self.get_nearest_wts(data)
+        error = 0
+        for i in range(data.shape[0]):
+            error += np.linalg.norm(data[i] - nearest_wts[i])
+        return error
 
     def u_matrix(self):
         '''Compute U-matrix, the distance each SOM unit wt and that of its 8 local neighbors.
@@ -249,17 +255,17 @@ class SOM:
             for j in range(self.map_sz):
                 local_sum = 0
                 #looping over neighbors
-                for k in range(-1, 2):    
+                for k in range(-1, 2):
                     for l in range(-1, 2):
                         #dont worry about middle one
                         if k != 0 or l != 0:
-                            if j + l >= 0 and j + l < self.map_sz and i + k >= 0 and i + k < self.map_sz: 
+                            if j + l >= 0 and j + l < self.map_sz and i + k >= 0 and i + k < self.map_sz:
                                 #norm function calculates l2 distance between two vectors
                                 #compare current weight with all 8 surrounding weights, add the distances
                                 local_sum += np.linalg.norm(self.wts[j, i] - self.wts[j + l, i + k])
                 #set the correct index of the u-matrix to be the local sum
                 u[j, i] = local_sum
-        
+
         #return normalized u-matrix
         return u / np.max(u)
 
@@ -281,9 +287,9 @@ class SOM:
         indices = []
         for sample in data:
             indices.append(self.get_bmu(sample))
-        
+
         nearest_wts = np.zeros(data.shape)
         for i in range(nearest_wts.shape[0]):
             nearest_wts[i, :] = self.wts[indices[i]]
-        
+
         return nearest_wts
