@@ -152,8 +152,9 @@ class SOM:
         # TRAINING CODE HERE
         for i in range(self.max_iter):
             vec = copy[i]
-            self.get_bmu(vec)
-
+            bmu = self.get_bmu(vec)
+            self.update_wts(i, vec, bmu)
+            
         if self.verbose:
             print(f'Finished training.')
 
@@ -242,17 +243,24 @@ class SOM:
         - Normalize it so that the dynamic range of values span [0, 1]
 
         '''
-        u = np.zeros((self.map_sz, self.map_sz))
-        padded_wts = np.pad(self.wts, 1)
-        for i in range(self.map_sz):#1, padded_wts.shape[0] - 1):
-            for j in range(self.map_sz):#1, padded_wts.shape[1] - 1):
+        u = np.zeros((self.map_sz, self.map_sz)) #initialize u-matrix
+        #looping over both dimensions of map
+        for i in range(self.map_sz):
+            for j in range(self.map_sz):
                 local_sum = 0
-                for k in range(-1, 2):
+                #looping over neighbors
+                for k in range(-1, 2):    
                     for l in range(-1, 2):
+                        #dont worry about middle one
                         if k != 0 or l != 0:
-                            local_sum += np.linalg.norm(padded_wts[i, j] - padded_wts[i + l, j + k])
-                u[i, j] = local_sum
+                            if j + l >= 0 and j + l < self.map_sz and i + k >= 0 and i + k < self.map_sz: 
+                                #norm function calculates l2 distance between two vectors
+                                #compare current weight with all 8 surrounding weights, add the distances
+                                local_sum += np.linalg.norm(self.wts[j, i] - self.wts[j + l, i + k])
+                #set the correct index of the u-matrix to be the local sum
+                u[j, i] = local_sum
         
+        #return normalized u-matrix
         return u / np.max(u)
 
 
