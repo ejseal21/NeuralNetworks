@@ -140,18 +140,31 @@ class SOM:
         pass thru each training sample.
         '''
         copy = train_data.copy()
-        # np.random.shuffle(copy)        
-
+        np.random.shuffle(copy)
+        N = train_data.shape[0]
+        
         if self.verbose:
             print(f'Starting training...')
+        # j = 0
+        # for i in range(self.max_iter):
+        #     vec = copy[i + j]
+        #     bmu = self.get_bmu(vec)
+        #     self.update_wts(i+j, vec, bmu)
+        #     if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
+        #         #sends indexing back to the start, but lets i stay at its current value
+        #         j -= train_data.shape[0]
+
         j = 0
         for i in range(self.max_iter):
-            vec = copy[i + j]
-            bmu = self.get_bmu(vec)
-            self.update_wts(i+j, vec, bmu)
-            if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
-                #sends indexing back to the start, but lets i stay at its current value
-                j -= train_data.shape[0]
+            if i > N - 1:
+                m = i % N
+                vec = copy[m]
+                bmu = self.get_bmu(vec)
+                self.update_wts(i, vec, bmu)
+            else:
+                vec = copy[i]
+                bmu = self.get_bmu(vec)
+                self.update_wts(i, vec, bmu)
 
         if self.verbose:
             print(f'Finished training.')
