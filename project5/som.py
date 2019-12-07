@@ -233,8 +233,11 @@ class SOM:
         nearest_wts = self.get_nearest_wts(data)
         error = 0
         for i in range(data.shape[0]):
-            error += np.linalg.norm(data[i] - nearest_wts[i])
-        return error
+            distance = 0
+            for j in range(len(nearest_wts[i])):
+                distance += np.square(nearest_wts[i][j] - data[i][j])
+            error += np.sqrt(distance)
+        return error/data.shape[0]
 
     def u_matrix(self):
         '''Compute U-matrix, the distance each SOM unit wt and that of its 8 local neighbors.
