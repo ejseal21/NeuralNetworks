@@ -119,6 +119,8 @@ class SOM:
         - Normalize so that the maximum value in the kernel is `lr`
         '''
         gaussian = np.zeros((self.map_sz, self.map_sz, 1))
+        
+        # gaussian[:, :] = lr * 
         for i in range(self.map_sz):
             for j in range(self.map_sz):
                 gaussian[i, j, 0] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
