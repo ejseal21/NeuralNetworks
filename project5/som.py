@@ -118,10 +118,10 @@ class SOM:
         - Evaluate a Gaussian on a 2D grid with shape=(map_sz, map_sz) centered on `bmu_rc`.
         - Normalize so that the maximum value in the kernel is `lr`
         '''
-        gaussian = np.zeros((self.map_sz, self.map_sz))
+        gaussian = np.zeros((self.map_sz, self.map_sz, 1))
         for i in range(self.map_sz):
             for j in range(self.map_sz):
-                gaussian[i, j] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
+                gaussian[i, j, 0] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
         return gaussian
 
     def fit(self, train_data):
@@ -145,15 +145,6 @@ class SOM:
         
         if self.verbose:
             print(f'Starting training...')
-        # j = 0
-        # for i in range(self.max_iter):
-        #     vec = copy[i + j]
-        #     bmu = self.get_bmu(vec)
-        #     self.update_wts(i+j, vec, bmu)
-        #     if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
-        #         #sends indexing back to the start, but lets i stay at its current value
-        #         j -= train_data.shape[0]
-
         j = 0
         for i in range(self.max_iter):
             if i > train_data.shape[0] - 1:
@@ -210,11 +201,7 @@ class SOM:
         lr = self.compute_decayed_param(t, self.init_lr)
         sigma = self.compute_decayed_param(t, self.init_sigma)
         gauss = self.gaussian(bmu_rc, sigma, lr)
-
-        for i in range(self.wts.shape[0]):
-            for j in range(self.wts.shape[1]):
-                self.wts[i, j] = self.wts[i, j] +  gauss[i, j] * (input_vector - self.wts[i, j])
-
+        self.wts[:, :] = self.wts[:, :] + gauss * (input_vector - self.wts[:, :])
 
     def error(self, data):
         '''Computes the quantization error: total error incurred by approximating all data vectors
