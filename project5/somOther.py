@@ -1,7 +1,7 @@
 '''som.py
 2D self-organizing map
 CS343: Neural Networks
-Trisha and Alice
+YOUR NAMES HERE
 Project 5: Word Embeddings and SOMs
 '''
 import numpy as np
@@ -73,6 +73,7 @@ class SOM:
         
         self.bmu_neighborhood_x, self.bmu_neighborhood_y = np.meshgrid(np.arange(map_sz), np.arange(map_sz))
 
+
     def get_wts(self):
         '''Returns a COPY of the weight vector.
 
@@ -118,11 +119,13 @@ class SOM:
         - Evaluate a Gaussian on a 2D grid with shape=(map_sz, map_sz) centered on `bmu_rc`.
         - Normalize so that the maximum value in the kernel is `lr`
         '''
+
         gaussian = np.zeros((self.map_sz, self.map_sz))
         for i in range(self.map_sz):
             for j in range(self.map_sz):
                 gaussian[i, j] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
         return gaussian
+
 
     def fit(self, train_data):
         '''Main training method
@@ -133,7 +136,7 @@ class SOM:
 
         TODO:
         - Shuffle a COPY of the data samples (don't modify the original data passed in).
-        - On each training iteration, select a data vector.                       
+        - On each training iteration, select a data vector.
             - Compute the BMU, then update the weights of the BMU and its neighbors.
 
         NOTE: If self.max_iter > N, and the current iter > N, cycle back around and do another
@@ -141,34 +144,22 @@ class SOM:
         '''
         copy = train_data.copy()
         np.random.shuffle(copy)
-        train_data.shape[0]
-        
+
         if self.verbose:
             print(f'Starting training...')
-        # j = 0
-        # for i in range(self.max_iter):
-        #     vec = copy[i + j]
-        #     bmu = self.get_bmu(vec)
-        #     self.update_wts(i+j, vec, bmu)
-        #     if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
-        #         #sends indexing back to the start, but lets i stay at its current value
-        #         j -= train_data.shape[0]
 
+        # TRAINING CODE HERE
         j = 0
         for i in range(self.max_iter):
-            if i > train_data.shape[0] - 1:
-                m = i % train_data.shape[0]
-                vec = copy[m]
-                bmu = self.get_bmu(vec)
-                self.update_wts(i, vec, bmu)
-            else:
-                vec = copy[i]
-                bmu = self.get_bmu(vec)
-                self.update_wts(i, vec, bmu)
+            vec = copy[i + j]
+            bmu = self.get_bmu(vec)
+            self.update_wts(i+j, vec, bmu)
+            if self.max_iter > train_data.shape[0] and i + j >= train_data.shape[0] - 1:
+                #sends indexing back to the start, but lets i stay at its current value
+                j -= train_data.shape[0]
 
         if self.verbose:
             print(f'Finished training.')
-        
 
     def get_bmu(self, input_vector):
         '''Compute the best matching unit (BMU) given an input data vector.
@@ -176,7 +167,7 @@ class SOM:
 
         Parameters:
         ----------
-        input_vector: ndarray. shape=(n_features,). One data sample vector.
+        input_vector: ndarray. shape=(features,). One data sample vector.
 
         Returns:
         ----------
@@ -196,7 +187,7 @@ class SOM:
         if cur_ind == (-1, -1):
             print("your indices in get_bmu are (-1, -1), so you probably have something messed up.")
         return cur_ind
-        
+
 
     def update_wts(self, t, input_vector, bmu_rc):
         '''Applies the SOM update rule to change the BMU (and neighboring units') weights,
@@ -252,6 +243,7 @@ class SOM:
         return error/data.shape[0]
 
 
+
     def u_matrix(self):
         '''Compute U-matrix, the distance each SOM unit wt and that of its 8 local neighbors.
 
@@ -265,7 +257,7 @@ class SOM:
         - Normalize it so that the dynamic range of values span [0, 1]
 
         '''
-        u = np.zeros((self.map_sz, self.map_sz))  # initialize u-matrix
+        u = np.zeros((self.map_sz, self.map_sz)) #initialize u-matrix
         #looping over both dimensions of map
         for i in range(self.map_sz):
             for j in range(self.map_sz):
@@ -278,8 +270,7 @@ class SOM:
                             if j + l >= 0 and j + l < self.map_sz and i + k >= 0 and i + k < self.map_sz:
                                 #norm function calculates l2 distance between two vectors
                                 #compare current weight with all 8 surrounding weights, add the distances
-                                local_sum += np.linalg.norm(
-                                    self.wts[j, i] - self.wts[j + l, i + k])
+                                local_sum += np.linalg.norm(self.wts[j, i] - self.wts[j + l, i + k])
                 #set the correct index of the u-matrix to be the local sum
                 u[j, i] = local_sum
 
@@ -301,9 +292,14 @@ class SOM:
         TODO:
         - Compute and return the array of closest wts vectors to each of the input vectors.
         '''
+        # indices = []
+        # for sample in data:
+        #     indices.append(self.get_bmu(sample))
+
         nearest_wts = np.zeros(data.shape)
         for i in range(nearest_wts.shape[0]):
             bmu = self.get_bmu(data[i])
             nearest_wts[i, :] = self.wts[bmu]
 
         return nearest_wts
+
