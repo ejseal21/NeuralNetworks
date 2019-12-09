@@ -185,18 +185,8 @@ class SOM:
         TODO:
         - Find the unit with the closest weights to the data vector. Return its subscripted position.
         '''
-        min_dist = np.Inf
-        cur_ind = (-1, -1)
-        for i in range(self.map_sz):
-            for j in range(self.map_sz):
-                cur_dist = np.linalg.norm(input_vector - self.wts[i, j]) 
-                if cur_dist < min_dist:
-                    min_dist = cur_dist
-                    cur_ind = (i, j)
-        if cur_ind == (-1, -1):
-            print("your indices in get_bmu are (-1, -1), so you probably have something messed up.")
-        return cur_ind
-        
+        dists = np.linalg.norm(self.wts - input_vector, axis=2)
+        return np.unravel_index(np.argmin(dists, axis=None), dists.shape)
 
     def update_wts(self, t, input_vector, bmu_rc):
         '''Applies the SOM update rule to change the BMU (and neighboring units') weights,
