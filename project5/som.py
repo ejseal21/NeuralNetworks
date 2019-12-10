@@ -118,13 +118,17 @@ class SOM:
         - Evaluate a Gaussian on a 2D grid with shape=(map_sz, map_sz) centered on `bmu_rc`.
         - Normalize so that the maximum value in the kernel is `lr`
         '''
-        gaussian = np.zeros((self.map_sz, self.map_sz, 1))
-        
-        # gaussian[:, :] = lr * 
-        for i in range(self.map_sz):
-            for j in range(self.map_sz):
-                gaussian[i, j, 0] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
-        return gaussian
+
+        dist_sqr = np.square(self.bmu_neighborhood_y - bmu_rc[0]) + np.square(self.bmu_neighborhood_x - bmu_rc[1])
+        g = lr * np.exp(-dist_sqr/(2 * np.square(sigma)))
+        g = np.expand_dims(g, 2)
+        # gaussian = np.zeros((self.map_sz, self.map_sz, 1))
+         
+        # # gaussian[:, :] = lr * 
+        # for i in range(self.map_sz):
+        #     for j in range(self.map_sz):
+        #         gaussian[i, j, 0] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
+        return g
 
     def fit(self, train_data):
         '''Main training method
@@ -158,7 +162,9 @@ class SOM:
                 vec = copy[i]
                 bmu = self.get_bmu(vec)
                 self.update_wts(i, vec, bmu)
-
+            if self.verbose:
+                if i % 1000 == 0:
+                    print('done with iteration', i)
         if self.verbose:
             print(f'Finished training.')
         
