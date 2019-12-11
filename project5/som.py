@@ -119,16 +119,10 @@ class SOM:
         - Normalize so that the maximum value in the kernel is `lr`
         '''
 
-        dist_sqr = np.square(self.bmu_neighborhood_y - bmu_rc[0]) + np.square(self.bmu_neighborhood_x - bmu_rc[1])
-        g = lr * np.exp(-dist_sqr/(2 * np.square(sigma)))
-        g = np.expand_dims(g, 2)
-        # gaussian = np.zeros((self.map_sz, self.map_sz, 1))
-         
-        # # gaussian[:, :] = lr * 
-        # for i in range(self.map_sz):
-        #     for j in range(self.map_sz):
-        #         gaussian[i, j, 0] = lr * np.exp(-((i - bmu_rc[0])**2 + (j - bmu_rc[1])**2)/(2 * (sigma**2)))
-        return g
+        dist = (self.bmu_neighborhood_y - bmu_rc[0])**2 + (self.bmu_neighborhood_x - bmu_rc[1])**2
+        gaussian = lr * np.exp(-dist/(2 * sigma**2))
+        gaussian = np.expand_dims(gaussian, 2)
+        return gaussian
 
     def fit(self, train_data):
         '''Main training method
@@ -164,7 +158,7 @@ class SOM:
                 self.update_wts(i, vec, bmu)
             if self.verbose:
                 if i % 1000 == 0:
-                    print('done with iteration', i)
+                     print('done with iteration', i)
         if self.verbose:
             print(f'Finished training.')
         
